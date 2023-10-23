@@ -13,6 +13,8 @@ class tree:
     input: takes in the entire data set of WIFI points
     Class Attributes:
     1) self.start_node (the start node for the tree)
+    2) self.training_data (the training data and labels)
+    3) self.test (the test data and labels)
 
     Class Methods:
     1) tree.evaluate(test_data): run the test data, and give a summary of the test in a table
@@ -52,11 +54,6 @@ class node:
       run condition and then pass the sample onto the next node
 
   '''
-  pass
-
-
-def run_test(sample):
-  #TODO: take a data sample and run it through a built tree
   pass
 
 
