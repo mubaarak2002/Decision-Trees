@@ -5,7 +5,13 @@ import random
 test_proportion = 0.1
 split_resolution = 10
 
-class tree:
+class Tree:
+  def __init__(self, dataset):
+    dataset, categories = extract_categories(clean_dataset)
+    x_train, x_test, y_train, y_test = split_dataset(dataset, categories, test_proportion)
+    self.depth = 0
+    self.head = Node(dataset, depth)
+
 #TODO: Create the Tree Class
 
   '''
@@ -25,8 +31,21 @@ class tree:
   '''
   pass
 
-class node:
+class Node:
   #TODO: Create the Node Class
+  def __init__(self, dataset):
+    dataset, categories = extract_categories(dataset)
+    num_available_labels = np.unique(categories)
+    if(len(num_available_labels) == 1):
+      self.room = num_available_labels
+      return
+    self.room = None
+    dataset_a, dataset_b, split, feature = find_split(dataset)
+    self.left = Node(dataset_a)
+    self.right = Node(dataset_b)
+    self.feature = feature
+    self.split = split
+
   '''
   Constructror:
     input: the current data set that is still undetermined after all prior branches, atributes, and other stuff
@@ -161,6 +180,8 @@ def find_split(dataset):
   dataset_a = dataset[dataset[:, feature] < split, :]
   dataset_b = dataset[dataset[:, feature] > split, :]
   print(split, dataset_a, dataset_b)
+  print("------")
+  print(feature, split)
   return dataset_a, dataset_b, split, feature
 
 
