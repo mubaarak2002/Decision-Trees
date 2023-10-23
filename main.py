@@ -1,5 +1,5 @@
 import numpy as np
-import random #REMOVE AND REPLACE WITH NUMPY
+import random
 
 # tuning parameters
 test_proportion = 0.1
@@ -9,22 +9,55 @@ class tree:
 #TODO: Create the Tree Class
 
   '''
-  construtor:
-    1) Head of the Node
+  Construtor:
+    input: takes in the entire data set of WIFI points
+    Class Attributes:
+    1) self.start_node (the start node for the tree)
+
+    Class Methods:
+    1) tree.evaluate(test_data): run the test data, and give a summary of the test in a table
+    2) tree.show(): plot the tree and all the thresholds (might be dificult but can give a go)
+    3) tree.confusion_matrix(): plot the confusion matrix of the tree
+    add any other visualisation functions
   '''
-
-
-
-
-
   pass
 
 class node:
-#TODO: Create the Node Class
+  #TODO: Create the Node Class
+  '''
+  Constructror:
+    input: the current data set that is still undetermined after all prior branches
+  Class Attributes:
+    1) self.value (= None if is a branch node and = label if end node)
+    2) self.attribute (The attribute to test (number of index of globally available label list in master tree))
+    3) self.threshold (The value determining if you should split or not)
+    4) self.less_than (= the next Node if test attribute is less than value (= None if self.value != None)) 
+    5) self.greater_eq (= the next node if test attribute is geq than value (= None if self.value != None))
+
+
+  Constructor Code:
+  1) Take all available data and collect available labels
+    a) if num labels == 1: create end node w/ less_than
+    b) if depth == k: create end node with most dominant value
+  2) Run find_split() and best_split_in_feature() to determine the split
+  3) assign found values into each Class Attribute
+
+  Class Method node.run_test():
+    input: current Sample
+    This is the method run when in runtime
+
+    if leaf:
+      return self.value
+    else:
+      run condition and then pass the sample onto the next node
+
+  '''
   pass
 
 
-
+def run_test(sample):
+  #TODO: take a data sample and run it through a built tree
+  pass
 
 
 def main():
