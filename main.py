@@ -15,6 +15,7 @@ class tree:
     1) self.start_node (the start node for the tree)
     2) self.training_data (the training data and labels)
     3) self.test (the test data and labels)
+    4) self.all_labels (all labels so indexing stays consistant)
 
     Class Methods:
     1) tree.evaluate(test_data): run the test data, and give a summary of the test in a table
@@ -28,13 +29,14 @@ class node:
   #TODO: Create the Node Class
   '''
   Constructror:
-    input: the current data set that is still undetermined after all prior branches
+    input: the current data set that is still undetermined after all prior branches, atributes, and other stuff
   Class Attributes:
     1) self.value (= None if is a branch node and = label if end node)
     2) self.attribute (The attribute to test (number of index of globally available label list in master tree))
     3) self.threshold (The value determining if you should split or not)
     4) self.less_than (= the next Node if test attribute is less than value (= None if self.value != None)) 
     5) self.greater_eq (= the next node if test attribute is geq than value (= None if self.value != None))
+    6) self.All_labels (all labels in a list so indexing stays consistant)
 
 
   Constructor Code:
