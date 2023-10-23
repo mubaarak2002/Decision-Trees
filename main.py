@@ -1,9 +1,31 @@
 import numpy as np
-import random
+import random #REMOVE AND REPLACE WITH NUMPY
 
 # tuning parameters
 test_proportion = 0.1
 split_resolution = 10
+
+class tree:
+#TODO: Create the Tree Class
+
+  '''
+  construtor:
+    1) Head of the Node
+  '''
+
+
+
+
+
+  pass
+
+class node:
+#TODO: Create the Node Class
+  pass
+
+
+
+
 
 def main():
   clean_dataset = np.loadtxt("WIFI_db/clean_dataset.txt")
@@ -55,7 +77,24 @@ def calc_entropy(occurences):
   return entropy
 
 
+
 def decision_tree_learning(training_dataset, depth):
+
+  dataset, categories = extract_categories(training_dataset)
+  num_available_labels = np.unique(categories)
+
+  if len(num_available_labels) == 1:
+    '''
+    TODO: If the number of labels avaiable in this node is all the same, 
+    then the recursion must be ended,and this must turn into a leaf
+    '''
+    
+    pass
+
+
+
+
+
   pass
 
 def find_split(dataset):
