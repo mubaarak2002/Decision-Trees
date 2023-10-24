@@ -24,7 +24,7 @@ class Tree:
   '''
   
   def __init__(self, dataset, depth):
-    dataset, categories = extract_categories(dataset)
+    x_values, categories = extract_categories(dataset)
     self.labels = categories
     x_train, x_test, y_train, y_test = split_dataset(dataset, categories, test_proportion)
     self.x_train = x_train
