@@ -32,18 +32,22 @@ class Tree:
   pass
 
 class Node:
-  #TODO: Create the Node Class
-  def __init__(self, dataset):
+  """Node constructor"""
+  def __init__(self, dataset, k = 0):
     dataset, categories = extract_categories(dataset)
     num_available_labels = np.unique(categories)
     if(len(num_available_labels) == 1):
       self.room = num_available_labels
       return
+    elif(k == depth):
+      majority = 
     self.room = None
     dataset_a, dataset_b, split, feature = find_split(dataset)
     self.left = Node(dataset_a)
     self.right = Node(dataset_b)
+    #feature is the room number
     self.feature = feature
+    #split is the value its split on
     self.split = split
 
   '''
