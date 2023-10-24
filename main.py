@@ -4,16 +4,9 @@ import random
 # tuning parameters
 test_proportion = 0.1
 split_resolution = 10
+depth = 8
 
 class Tree:
-  def __init__(self, dataset):
-    dataset, categories = extract_categories(clean_dataset)
-    x_train, x_test, y_train, y_test = split_dataset(dataset, categories, test_proportion)
-    self.depth = 0
-    self.head = Node(dataset, depth)
-
-#TODO: Create the Tree Class
-
   '''
   Construtor:
     input: takes in the entire data set of WIFI points
@@ -29,27 +22,26 @@ class Tree:
     3) tree.confusion_matrix(): plot the confusion matrix of the tree
     add any other visualisation functions
   '''
-  pass
+  
+  def __init__(self, dataset, depth):
+    dataset, categories = extract_categories(dataset)
+    self.labels = categories
+    x_train, x_test, y_train, y_test = split_dataset(dataset, categories, test_proportion)
+    self.x_train = x_train
+    self.x_test = x_test
+    self.y_train = y_train
+    self.y_test = y_test
+    self.depth = depth
+    self.head = Node(x_train, self.depth)
+
+  def evaluate(self, test_data):
+    outlist = []
+    for sample in test_data:
+      outlist.append(self.head.evaluate(sample))
+    
+
 
 class Node:
-  """Node constructor"""
-  def __init__(self, dataset, k = 0):
-    dataset, categories = extract_categories(dataset)
-    num_available_labels = np.unique(categories)
-    if(len(num_available_labels) == 1):
-      self.room = num_available_labels
-      return
-    elif(k == depth):
-      majority = 
-    self.room = None
-    dataset_a, dataset_b, split, feature = find_split(dataset)
-    self.left = Node(dataset_a)
-    self.right = Node(dataset_b)
-    #feature is the room number
-    self.feature = feature
-    #split is the value its split on
-    self.split = split
-
   '''
   Constructror:
     input: the current data set that is still undetermined after all prior branches, atributes, and other stuff
@@ -79,7 +71,35 @@ class Node:
       run condition and then pass the sample onto the next node
 
   '''
-  pass
+  """Node constructor"""
+  def __init__(self, dataset, k = 0):
+    dataset, categories = extract_categories(dataset)
+    num_available_labels = np.unique(categories)
+    if(len(num_available_labels) == 1):
+      self.room = num_available_labels
+      return
+    elif(k == depth):
+      majority = 
+    self.room = None
+    dataset_a, dataset_b, split, feature = find_split(dataset)
+    self.left = Node(dataset_a)
+    self.right = Node(dataset_b)
+    #feature is the room number
+    self.feature = feature
+    #split is the value its split on
+    self.split = split
+  
+  
+  def evaluate(self, data):
+    '''takes a single data entry, and then evaluates it based on the node's current splitting criteria'''
+    if self.room is not None:
+      return self.room
+    
+    if data[self.feature] < self.split:
+      return self.left.evaluate(data)
+    else:
+      return self.right.evaluate(data)
+
 
 
 def main():
