@@ -249,7 +249,7 @@ def find_split(dataset):
   split = best_split[1]
   feature = best_split[2]
   dataset_a = dataset[dataset[:, feature] < split, :]
-  dataset_b = dataset[dataset[:, feature] > split, :]
+  dataset_b = dataset[dataset[:, feature] >= split, :]
   #print(split, dataset_a, dataset_b)
   #print("------")
   #print(feature, split)
