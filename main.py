@@ -4,7 +4,30 @@ import random
 # tuning parameters
 test_proportion = 0.1
 split_resolution = 10
-depth = 8
+depth = 13
+
+
+
+test_data = np.array([
+  
+[-68,	-57,	-61,	-65,	-71,	-85,	-85,	1],
+[-63,	-60,  -60,	-67,	-76,	-85,	-84,	1],
+[-61,	-60,	-68,	-62,	-77,	-90,	-80,	1],
+[-63,	-65,	-60,	-63,	-77,	-81,	-87,	1],
+[-64,	-55,	-63,	-66,	-76,	-88,	-83,	1],
+[-65,	-61,	-65,	-67,	-69,	-87,	-84,	1],
+[-61,	-63,	-58,	-66,	-74,	-87,	-82,	1],
+[-65,	-60,	-59,  -63,	-76,	-86,	-82,	1],
+[-62,	-60,  -66,	-68,	-80,	-86,	-91,	1],
+[-67,	-61,	-62,	-67,	-77,	-83,	-91,	1],
+[-65,	-59,	-61,	-67,	-72,	-86,	-81,	1],
+[-63,	-57,	-61,	-65,	-73,	-84,	-84,	1]
+  
+  
+  
+])
+
+
 
 class Tree:
   '''
@@ -23,7 +46,7 @@ class Tree:
     add any other visualisation functions
   '''
   
-  def __init__(self, dataset, depth):
+  def __init__(self, dataset, max_depth=depth):
     x_values, categories = extract_categories(dataset)
     self.labels = categories
     x_train, x_test, y_train, y_test = split_dataset(dataset, categories, test_proportion)
@@ -31,8 +54,9 @@ class Tree:
     self.x_test = x_test
     self.y_train = y_train
     self.y_test = y_test
-    self.depth = depth
-    self.head = Node(x_train, self.depth)
+    self.depth = max_depth
+
+    self.head = Node(x_train, 0)
 
   def evaluate(self, test_data):
     outlist = []
@@ -54,26 +78,6 @@ class Tree:
     
 
 class Node:
-  """Node constructor"""
-  def __init__(self, dataset, TreeDepth = 0):
-    x_values, categories = extract_categories(dataset)
-    [labels, counts] = np.unique(categories, return_counts=True)
-    if(len(labels) == 1):
-      self.room = labels
-      return
-    elif(TreeDepth == depth):
-      majority = labels[np.argmax(counts)]
-      self.room = counts
-      return
-    self.room = None
-    dataset_a, dataset_b, split, feature = find_split(dataset)
-    self.left = Node(dataset_a)
-    self.right = Node(dataset_b)
-    #feature is the room number
-    self.feature = feature
-    #split is the value its split on
-    self.split = split
-
   '''
   Constructror:
     input: the current data set that is still undetermined after all prior branches, atributes, and other stuff
@@ -104,6 +108,32 @@ class Node:
 
   '''
   """Node constructor"""
+  def __init__(self, dataset, TreeDepth = 0):
+    print("here")
+    x_values, categories = extract_categories(dataset)
+    print("working here")
+    [labels, counts] = np.unique(categories, return_counts=True)
+    if(len(labels) == 1):
+      print("detected 1 label")
+      self.room = labels[0]
+      return
+    elif(TreeDepth == depth):
+      majority = labels[np.argmax(counts)]
+      self.room = majority
+      return
+    else:
+      print("still more than 1 label left")
+      self.room = None
+      dataset_a, dataset_b, split, feature = find_split(dataset)
+      print("left with depth = {}".format(TreeDepth))
+      self.left = Node(dataset_a, TreeDepth + 1)
+      print("right with depth = {}".format(TreeDepth))
+      self.right = Node(dataset_b, TreeDepth + 1)
+      #feature is the room number
+      self.feature = feature
+      #split is the value its split on
+      self.split = split
+
   
   def evaluate(self, data):
     '''takes a single data entry, and then evaluates it based on the node's current splitting criteria'''
@@ -127,7 +157,7 @@ def main():
   print("Train set:", len(x_train), "Test set:", len(x_test))
 
   #find_split(clean_dataset)
-  test = Node(clean_dataset)
+  test = Tree(clean_dataset)
 
 
 def extract_categories(dataset):
@@ -196,6 +226,7 @@ def find_split(dataset):
   2 datasets after the split and the details of the split
   
   """
+  print(dataset)
   height, width = np.shape(dataset)
   categories = dataset[:height, -1:].astype(int).flatten()
   all_splits = []
@@ -219,9 +250,9 @@ def find_split(dataset):
   feature = best_split[2]
   dataset_a = dataset[dataset[:, feature] < split, :]
   dataset_b = dataset[dataset[:, feature] > split, :]
-  print(split, dataset_a, dataset_b)
-  print("------")
-  print(feature, split)
+  #print(split, dataset_a, dataset_b)
+  #print("------")
+  #print(feature, split)
   return dataset_a, dataset_b, split, feature
 
 
@@ -270,4 +301,5 @@ def best_split_in_feature(column, categories, resolution):
 
 
 if __name__ == "__main__":
-  main()
+  #main()
+  Node(test_data)
