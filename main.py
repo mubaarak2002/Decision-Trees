@@ -56,7 +56,7 @@ class Tree:
 class Node:
   """Node constructor"""
   def __init__(self, dataset, TreeDepth = 0):
-    dataset, categories = extract_categories(dataset)
+    x_values, categories = extract_categories(dataset)
     [labels, counts] = np.unique(categories, return_counts=True)
     if(len(labels) == 1):
       self.room = labels
@@ -127,7 +127,7 @@ def main():
   print("Train set:", len(x_train), "Test set:", len(x_test))
 
   #find_split(clean_dataset)
-  test = Node(dataset)
+  test = Node(clean_dataset)
 
 
 def extract_categories(dataset):
