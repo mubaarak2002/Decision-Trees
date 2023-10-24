@@ -302,4 +302,12 @@ def best_split_in_feature(column, categories, resolution):
 
 if __name__ == "__main__":
   #main()
-  Node(test_data)
+  clean_dataset = np.loadtxt("WIFI_db/clean_dataset.txt")
+  noisy_dataset = np.loadtxt("WIFI_db/noisy_dataset.txt")
+  dataset, categories = extract_categories(clean_dataset)
+  x_train, x_test, y_train, y_test = split_dataset(dataset, categories,
+                                                   test_proportion)
+  print("Train set:", len(x_train), "Test set:", len(x_test))
+
+  #find_split(clean_dataset)
+  test = Node(clean_dataset)
