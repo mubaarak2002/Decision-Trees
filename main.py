@@ -54,6 +54,26 @@ class Tree:
     
 
 class Node:
+  """Node constructor"""
+  def __init__(self, dataset, TreeDepth = 0):
+    dataset, categories = extract_categories(dataset)
+    [labels, counts] = np.unique(categories, return_counts=True)
+    if(len(labels) == 1):
+      self.room = labels
+      return
+    elif(TreeDepth == depth):
+      majority = labels[np.argmax(counts)]
+      self.room = counts
+      return
+    self.room = None
+    dataset_a, dataset_b, split, feature = find_split(dataset)
+    self.left = Node(dataset_a)
+    self.right = Node(dataset_b)
+    #feature is the room number
+    self.feature = feature
+    #split is the value its split on
+    self.split = split
+
   '''
   Constructror:
     input: the current data set that is still undetermined after all prior branches, atributes, and other stuff
@@ -84,23 +104,6 @@ class Node:
 
   '''
   """Node constructor"""
-  def __init__(self, dataset, k = 0):
-    dataset, categories = extract_categories(dataset)
-    num_available_labels = np.unique(categories)
-    if(len(num_available_labels) == 1):
-      self.room = num_available_labels
-      return
-    elif(k == depth):
-      majority = 
-    self.room = None
-    dataset_a, dataset_b, split, feature = find_split(dataset)
-    self.left = Node(dataset_a)
-    self.right = Node(dataset_b)
-    #feature is the room number
-    self.feature = feature
-    #split is the value its split on
-    self.split = split
-  
   
   def evaluate(self, data):
     '''takes a single data entry, and then evaluates it based on the node's current splitting criteria'''
@@ -123,7 +126,8 @@ def main():
                                                    test_proportion)
   print("Train set:", len(x_train), "Test set:", len(x_test))
 
-  find_split(clean_dataset)
+  #find_split(clean_dataset)
+  test = Node(dataset)
 
 
 def extract_categories(dataset):
