@@ -38,8 +38,20 @@ class Tree:
     outlist = []
     for sample in test_data:
       outlist.append(self.head.evaluate(sample))
-    
+    return outlist
 
+  
+  def run_test(self):
+    results = self.evaluate(self.x_train)
+
+    sum = 0
+    for i in range(len(results)):
+      if results[i] == self.y_test[i]:
+        sum += 1
+        
+    print("The accuracy for this test was {}".format(sum / len(results)))
+    
+    
 
 class Node:
   '''
