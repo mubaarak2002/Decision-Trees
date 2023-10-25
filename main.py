@@ -1,10 +1,14 @@
 import numpy as np
+import matplotlib.pyplot as plt
 import random
+from matplotlib.widgets import Cursor
+from matplotlib.offsetbox import AnnotationBbox, OffsetImage
 
 # tuning parameters
 test_proportion = 0.1
 split_resolution = 10
-depth = 13
+depth = 5
+mode = "build"
 
 
 
@@ -73,9 +77,177 @@ class Tree:
       if results[i] == self.y_test[i]:
         sum += 1
         
-    print("The accuracy for this test was {}".format(sum / len(results)))
+    if mode == "debug": print("The accuracy for this test was {}".format(sum / len(results)))
+  
+  def show(self):
+    '''
+    shows a tree using a matplotlib frame with hoverable elements to see what is currently being split on
+    
+    Credit to the online tutorial for aiding in this project: https://matplotlib.org/matplotblog/posts/mpl-for-making-diagrams/ and https://matplotlib.org/stable/gallery/text_labels_and_annotations/demo_annotation_box.html
+    
+    '''
+    
+    #frame attributes
+    w = 16
+    h = 9
+    border_width = 4
+    border_colour = "black"
+    colour = "lightgray"
+    
+    #finding how deep and how wide the tree is:
+    left_counter = 0
+    right_counter = 0
+    max_tree_depth = 0
+    
+    root = self.head
+    while True:
+      
+      if root.left is not None:
+        left_counter += 1
+        
+        if root.depth > max_tree_depth:
+          max_tree_depth = root.depth
+        
+        root = root.left
+      else:
+        break
+    
+    root = self.head
+    while True:
+      if root.right is not None:
+        right_counter += 1
+        
+        if root.depth > max_tree_depth:
+          max_tree_depth = root.depth
+        
+        root = root.right
+      else:
+        break
+    
+    #need to start on 1, not 0, so add one
+    max_tree_depth += 1
+    print("Tree found with max depth {a}, spanning {b} left entries and {c} right entries".format(a=max_tree_depth, b=left_counter, c=right_counter))
+    
+    total_span = left_counter + right_counter
+    
+    horisontal_bins = total_span
+    vertical_bins = max_tree_depth
+    print("\nNeeds {a} vertical bins and {b} horisontal bins\n".format(a=vertical_bins, b=horisontal_bins))
+    
+    if(1): #used to fold this down for ease of coding
+      #Frame initialisation
+      fig = plt.figure(figsize= (w, h) )
+      
+      ax = fig.add_axes( (0, 0, 1, 1) )
+      
+      ax.set_xlim(0, w)
+      ax.set_ylim(0, h)
+      
+      ax.tick_params(bottom=False, top=False, left=False, right=False)
+      ax.tick_params(labelbottom=False, labeltop=False, labelleft=False, labelright=False)
+      
+      
+      ax.spines["top"].set_color(border_colour)
+      ax.spines["bottom"].set_color(border_colour)
+      ax.spines["left"].set_color(border_colour)
+      ax.spines["right"].set_color(border_colour)
+      ax.spines["top"].set_linewidth(border_width)
+      ax.spines["bottom"].set_linewidth(border_width)
+      ax.spines["left"].set_linewidth(border_width)
+      ax.spines["right"].set_linewidth(border_width)
+      
+      ax.set_facecolor(colour)
+      
+    #Tree Construction
+    if horisontal_bins > vertical_bins:
+      radii = w / horisontal_bins
+    else:
+      radii = h / vertical_bins
+    
+    #for debugging
+    radii = 0.2
+    
+    centres = []
+    texts = {}
+    arrows = {}
+
+    root = self.head
+    midpoint = w/2
+    height_index = 0
     
     
+    
+    #the root node
+    root_centre = ( (midpoint) , ( h *  ( ( vertical_bins - height_index ) / vertical_bins ) - radii  ) )
+    centres.append( root_centre )
+    texts[root_centre] = root.print()
+    
+    
+    def plotTree(tree, min, max, bin_depth):
+      '''
+      Takes the current remaining portion of the screen and splits it into two, then completes the rest of the tree in those halves of the screen
+      '''
+      dot_centre = ( (max + min) / 2 , ( h *  ( ( vertical_bins - bin_depth ) / vertical_bins ) + radii  ) )
+      centres.append( dot_centre )
+      texts[dot_centre] = tree.print()
+      if tree.left is not None:
+        L = plotTree(tree.left, min, (max + min) / 2, bin_depth + 1)
+        
+        R = plotTree(tree.right, (max + min) / 2, max, bin_depth + 1)
+        arrows[dot_centre] = [L,R]
+      
+      
+      return dot_centre
+      
+      
+
+    
+    L = plotTree(root.left, 0, midpoint, height_index + 1)
+    R = plotTree(root.right, midpoint, w, height_index + 1)
+    arrows[root_centre] = [L,R]
+    print(arrows)
+    
+    print("\n")
+    print("radius is: {}".format(radii))
+    print("\n\n")
+    print(texts)
+    print("\n")
+    
+    #draw all the nodes
+    for index, centre in enumerate(centres):
+      x, y = centre
+      angle = np.linspace(0, 2*np.pi, 100)
+      ax.plot(
+        
+        x + radii * np.cos(angle),
+        y + radii * np.sin(angle),
+        color = "midnightblue"
+        
+      )
+      
+    #draw all the arrows
+    for start, ends in arrows.items():
+      for end in ends:
+        ax.annotate( 
+                    "",
+                    (end[0], end[1] + radii),
+                    (start[0] , start[1] - radii),
+                    arrowprops=dict(arrowstyle = "-|>")
+                    )
+        
+        
+    for point, text in texts.items():
+      cursor = Cursor(plt.gca(), useblit=True, color='red', linewidth=1)
+      annotation = AnnotationBbox(OffsetImage(text, zoom=2), point,
+                            xybox=(-30, 30),
+                            boxcoords="offset points",
+                            arrowprops=dict(arrowstyle="->"))
+      
+      plt.gca().add_artist(annotation)    
+    
+      
+    fig.savefig("current_tree.png", dpi=300)
+    plt.show()
 
 class Node:
   '''
@@ -109,31 +281,38 @@ class Node:
   '''
   """Node constructor"""
   def __init__(self, dataset, TreeDepth = 0):
-    print("here")
+
+    self.depth = TreeDepth
     x_values, categories = extract_categories(dataset)
-    print("working here")
     [labels, counts] = np.unique(categories, return_counts=True)
     if(len(labels) == 1):
-      print("detected 1 label")
       self.room = labels[0]
+      self.left = None
+      self.right = None
       return
     elif(TreeDepth == depth):
       majority = labels[np.argmax(counts)]
       self.room = majority
+      self.left = None
+      self.right = None
       return
     else:
-      print("still more than 1 label left")
+
       self.room = None
       dataset_a, dataset_b, split, feature = find_split(dataset)
-      print("left with depth = {}".format(TreeDepth))
       self.left = Node(dataset_a, TreeDepth + 1)
-      print("right with depth = {}".format(TreeDepth))
       self.right = Node(dataset_b, TreeDepth + 1)
+      
       #feature is the room number
       self.feature = feature
       #split is the value its split on
       self.split = split
 
+  def print(self):
+    if self.room is not None:
+      return "We are in room {}".format(self.room)
+    else:
+      return "Split on Feature {a} less than {b}".format(a=self.feature, b=round(self.split, 2))
   
   def evaluate(self, data):
     '''takes a single data entry, and then evaluates it based on the node's current splitting criteria'''
@@ -226,7 +405,7 @@ def find_split(dataset):
   2 datasets after the split and the details of the split
   
   """
-  print(dataset)
+  if mode == "debug": print(dataset)
   height, width = np.shape(dataset)
   categories = dataset[:height, -1:].astype(int).flatten()
   all_splits = []
@@ -250,9 +429,9 @@ def find_split(dataset):
   feature = best_split[2]
   dataset_a = dataset[dataset[:, feature] < split, :]
   dataset_b = dataset[dataset[:, feature] >= split, :]
-  #print(split, dataset_a, dataset_b)
-  #print("------")
-  #print(feature, split)
+  #if mode == "debug": print(split, dataset_a, dataset_b)
+  #if mode == "debug": print("------")
+  #if mode == "debug": print(feature, split)
   return dataset_a, dataset_b, split, feature
 
 
@@ -307,7 +486,8 @@ if __name__ == "__main__":
   dataset, categories = extract_categories(clean_dataset)
   x_train, x_test, y_train, y_test = split_dataset(dataset, categories,
                                                    test_proportion)
-  print("Train set:", len(x_train), "Test set:", len(x_test))
+  if mode == "debug": print("Train set:", len(x_train), "Test set:", len(x_test))
 
   #find_split(clean_dataset)
-  test = Node(clean_dataset)
+  test = Tree(clean_dataset)
+  test.show()
