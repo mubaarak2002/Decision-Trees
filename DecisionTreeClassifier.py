@@ -53,14 +53,12 @@ class Tree:
   def __init__(self, dataset, max_depth=depth):
     x_values, categories = extract_categories(dataset)
     self.labels = categories
-    x_train, x_test, y_train, y_test = split_dataset(dataset, categories, test_proportion)
-    self.x_train = x_train
-    self.x_test = x_test
-    self.y_train = y_train
-    self.y_test = y_test
+    train, test = split_train_test(dataset, test_proportion)
+    self.train = train
+    self.test = test
     self.depth = max_depth
 
-    self.head = Node(x_train, 0)
+    self.head = Node(train, 0)
 
   def evaluate(self, test_data):
     outlist = []
@@ -70,11 +68,11 @@ class Tree:
 
 
   def run_test(self):
-    results = self.evaluate(self.x_train)
+    results = self.evaluate(self.train)
 
     sum = 0
     for i in range(len(results)):
-      if results[i] == self.y_test[i]:
+      if results[i] == self.test[i][-1]:
         sum += 1
 
     if mode == "debug": print("The accuracy for this test was {}".format(sum / len(results)))
