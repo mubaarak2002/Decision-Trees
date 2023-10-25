@@ -235,15 +235,15 @@ class Tree:
                     arrowprops=dict(arrowstyle = "-|>")
                     )
         
+    if(0):      
+      for point, text in texts.items():
+        cursor = Cursor(plt.gca(), useblit=True, color='red', linewidth=1)
+        annotation = AnnotationBbox(OffsetImage(text, zoom=2), point,
+                              xybox=(-30, 30),
+                              boxcoords="offset points",
+                              arrowprops=dict(arrowstyle="->"))
         
-    for point, text in texts.items():
-      cursor = Cursor(plt.gca(), useblit=True, color='red', linewidth=1)
-      annotation = AnnotationBbox(OffsetImage(text, zoom=2), point,
-                            xybox=(-30, 30),
-                            boxcoords="offset points",
-                            arrowprops=dict(arrowstyle="->"))
-      
-      plt.gca().add_artist(annotation)    
+        plt.gca().add_artist(annotation)    
     
       
     fig.savefig("current_tree.png", dpi=300)
