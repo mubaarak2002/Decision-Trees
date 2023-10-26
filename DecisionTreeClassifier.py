@@ -322,6 +322,18 @@ class Node:
     else:
       return self.right.evaluate(data)
 
+class RandomClassifier:
+  def __init__(self):
+    self.unique_labels = []
+
+  def fit(self, dataset):
+    x_values, categories = extract_categories(dataset)
+    self.unique_labels = list(set(categories))
+
+  def predict(self, dataset):
+    random_indices = np.random.choice(unique_labels, len(dataset))
+    return random_indices
+
 def extract_categories(dataset):
   height, width = np.shape(dataset)
   no_of_attrtibutes = width - 1
