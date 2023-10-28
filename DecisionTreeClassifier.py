@@ -3,6 +3,8 @@ import matplotlib.pyplot as plt
 import random
 from matplotlib.widgets import Cursor
 from matplotlib.offsetbox import AnnotationBbox, OffsetImage
+from matplotlib.offsetbox import OffsetBox, AnnotationBbox, TextArea
+from matplotlib.text import OffsetFrom
 
 # tuning parameters
 test_proportion = 0.1
@@ -10,6 +12,8 @@ split_resolution = 10
 depth = 5
 mode = "build"
 
+#needs to be declared in global scope
+annotations = []
 
 
 test_data = np.array([
@@ -124,13 +128,13 @@ class Tree:
 
     #need to start on 1, not 0, so add one
     max_tree_depth += 1
-    print("Tree found with max depth {a}, spanning {b} left entries and {c} right entries".format(a=max_tree_depth, b=left_counter, c=right_counter))
+    if mode == "debug": print("Tree found with max depth {a}, spanning {b} left entries and {c} right entries".format(a=max_tree_depth, b=left_counter, c=right_counter))
 
     total_span = left_counter + right_counter
 
     horisontal_bins = total_span
     vertical_bins = max_tree_depth
-    print("\nNeeds {a} vertical bins and {b} horisontal bins\n".format(a=vertical_bins, b=horisontal_bins))
+    if mode == "debug": print("\nNeeds {a} vertical bins and {b} horisontal bins\n".format(a=vertical_bins, b=horisontal_bins))
 
     if(1): #used to fold this down for ease of coding
       #Frame initialisation
@@ -168,6 +172,8 @@ class Tree:
     centres = []
     texts = {}
     arrows = {}
+    
+ 
 
     root = self.head
     midpoint = w/2
@@ -185,44 +191,41 @@ class Tree:
       '''
       Takes the current remaining portion of the screen and splits it into two, then completes the rest of the tree in those halves of the screen
       '''
+      
+      
+      
       dot_centre = ( (max + min) / 2 , ( h *  ( ( vertical_bins - bin_depth ) / vertical_bins ) + radii  ) )
       centres.append( dot_centre )
       texts[dot_centre] = tree.print()
       if tree.left is not None:
         L = plotTree(tree.left, min, (max + min) / 2, bin_depth + 1)
-
+        
         R = plotTree(tree.right, (max + min) / 2, max, bin_depth + 1)
         arrows[dot_centre] = [L,R]
-
-
+      
+      
       return dot_centre
+      
+      
 
-
-
-
+    
     L = plotTree(root.left, 0, midpoint, height_index + 1)
     R = plotTree(root.right, midpoint, w, height_index + 1)
     arrows[root_centre] = [L,R]
-    print(arrows)
-
-    print("\n")
-    print("radius is: {}".format(radii))
-    print("\n\n")
-    print(texts)
-    print("\n")
-
+  
+    
     #draw all the nodes
     for index, centre in enumerate(centres):
       x, y = centre
       angle = np.linspace(0, 2*np.pi, 100)
       ax.plot(
-
+        
         x + radii * np.cos(angle),
         y + radii * np.sin(angle),
         color = "midnightblue"
-
+        
       )
-
+      
     #draw all the arrows
     for start, ends in arrows.items():
       for end in ends:
@@ -232,18 +235,35 @@ class Tree:
                     (start[0] , start[1] - radii),
                     arrowprops=dict(arrowstyle = "-|>")
                     )
+        
+    if(1):      
+      
+      def display_text(event):
+        
+        
+        global annotations
+            
+        for note in annotations:
+          note.remove()
+        annotations = []
+          
+        x, y = event.xdata, event.ydata
+        text = "Click on a node to view the node"
+        for (t_x, t_y), nodeText in texts.items():
+          dist =  (  (t_x - x) ** 2 + (t_y - y) ** 2  ) ** 0.5
+          if dist < radii:
+            text = nodeText
+            break
+            
+      
+        offsetbox = TextArea(text)
+ 
+        ab = AnnotationBbox(offsetbox, (x, y), xycoords='data', boxcoords="offset points",)
+        ax.add_artist(ab)
+        annotations.append(ab)
+        plt.draw()
 
-    if(0):      
-      for point, text in texts.items():
-        cursor = Cursor(plt.gca(), useblit=True, color='red', linewidth=1)
-        annotation = AnnotationBbox(OffsetImage(text, zoom=2), point,
-                              xybox=(-30, 30),
-                              boxcoords="offset points",
-                              arrowprops=dict(arrowstyle="->"))
-
-        plt.gca().add_artist(annotation)    
-
-
+      fig.canvas.mpl_connect("button_press_event", display_text)
     fig.savefig("current_tree.png", dpi=300)
     plt.show()
 
@@ -322,6 +342,8 @@ class Node:
     else:
       return self.right.evaluate(data)
 
+
+
 class RandomClassifier:
   def __init__(self):
     self.unique_labels = []
@@ -331,7 +353,7 @@ class RandomClassifier:
     self.unique_labels = list(set(categories))
 
   def predict(self, dataset):
-    random_indices = np.random.choice(unique_labels, len(dataset))
+    random_indices = np.random.choice(self.unique_labels, len(dataset))
     return random_indices
 
 def extract_categories(dataset):
