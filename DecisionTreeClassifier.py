@@ -65,14 +65,30 @@ class Tree:
     self.head = Node(train, 0)
 
   def evaluate(self, test_data):
+    '''Used for when test data is being given from an outside source'''
     outlist = []
     for sample in test_data:
       outlist.append(self.head.evaluate(sample))
+    #if mode == "debug": print(outlist)
     return outlist
+      
+  def evaluate_internal(self):
+    '''does the same as above, but uses the test data that is generated in the constructor'''
+    
+    results = self.evaluate(self.test)
+    out = []
+    for i in range(len(results)):
+      if results[i] == self.test[i][-1]:
+        out.append(1)
+      else:
+        out.append(0)
+    
+    return out
 
-
+  def name(self): return "Decision Tree Classifier"
+  
   def run_test(self):
-    results = self.evaluate(self.train)
+    results = self.evaluate(self.test)
 
     sum = 0
     for i in range(len(results)):
@@ -80,6 +96,7 @@ class Tree:
         sum += 1
 
     if mode == "debug": print("The accuracy for this test was {}".format(sum / len(results)))
+    print("The accuracy for this test was {}".format(sum / len(results)))
 
   def show(self):
     '''
@@ -344,17 +361,12 @@ class Node:
 
 
 
-class RandomClassifier:
-  def __init__(self):
-    self.unique_labels = []
 
-  def fit(self, dataset):
-    x_values, categories = extract_categories(dataset)
-    self.unique_labels = list(set(categories))
 
-  def predict(self, dataset):
-    random_indices = np.random.choice(self.unique_labels, len(dataset))
-    return random_indices
+
+
+      
+      
 
 def extract_categories(dataset):
   height, width = np.shape(dataset)
@@ -489,6 +501,7 @@ def best_split_in_feature(column, categories, resolution):
       lowest[1] = split_point_list[i]
   return lowest
 
+
 def confusion_matrix(actuals, predictions, class_labels=None):
   """ Compute the confusion matrix.
 
@@ -517,6 +530,7 @@ def confusion_matrix(actuals, predictions, class_labels=None):
 
   return confusion
 
+
 def accuracy(confusion):
   """ Compute the accuracy given the confusion matrix
 
@@ -532,6 +546,7 @@ def accuracy(confusion):
       return np.trace(confusion) / np.sum(confusion) # trace <= sum of elements across diagonal
   else:
       return 0.
+
 
 def precision(confusion):
   """ Compute the precision score per class given the ground truth and predictions
@@ -551,6 +566,7 @@ def precision(confusion):
 
   return (p, macro_p)
 
+
 def recall(confusion):
   """ Compute the recall score per class given confusion matrix
   Also return the macro-averaged recall across classes.
@@ -568,6 +584,7 @@ def recall(confusion):
   macro_r = np.mean(r)
 
   return (r, macro_r)
+
 
 def f1_score(confusion):
   """ Compute the F1-score per class given the ground truth and predictions
