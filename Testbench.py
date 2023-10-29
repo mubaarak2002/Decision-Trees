@@ -63,11 +63,11 @@ class Testbench():
             # Calculate the PDF values for the normal distribution
             pdf = 1 / (std * np.sqrt(2 * np.pi)) * np.exp(-0.5 * ((x - mean) / std) ** 2)
             
-            plt.plot(x, pdf, label=f"Mean={mean}, Std Dev={std}")
+            plt.plot(x, pdf, label=f"{method}, with Mean={round(mean, 2)}")
             
-        plt.title("Performance Distribution of Multiple Machine Learning Models (currently just comparing random and tree)")
-        plt.xlabel("X")
-        plt.ylabel("PDF")
+        plt.title("Performance Distribution of Multiple Machine Learning Models")
+        plt.xlabel("Success Rate")
+        plt.ylabel("Probability Concentration")
         plt.legend()
         plt.grid(True)
         plt.show()

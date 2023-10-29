@@ -13,7 +13,8 @@ class RandomClassifier:
     train, test = split_train_test(dataset, test_proportion)
     self.train = train
     self.test = test
-    self.fit(dataset)    
+    self.fit(dataset)
+    self.tree_name = "Random Classifier"
 
   def fit(self, dataset):
     x_values, categories = extract_categories(dataset)
@@ -41,7 +42,7 @@ class RandomClassifier:
       
       return out
   
-  def name(self): return "Random Classifier"
+  def name(self): return self.tree_name
   
   
   

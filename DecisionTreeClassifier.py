@@ -61,6 +61,8 @@ class Tree:
     self.train = train
     self.test = test
     self.depth = max_depth
+    self.tree_name = "Decision Tree Classifier"
+
 
     self.head = Node(train, 0)
 
@@ -85,7 +87,7 @@ class Tree:
     
     return out
 
-  def name(self): return "Decision Tree Classifier"
+  def name(self): return self.tree_name
   
   def run_test(self):
     results = self.evaluate(self.test)
