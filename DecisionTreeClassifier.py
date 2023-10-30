@@ -9,7 +9,7 @@ from matplotlib.text import OffsetFrom
 # tuning parameters
 test_proportion = 0.1
 split_resolution = 10
-depth = 5
+depth = 100
 mode = "build"
 figure_root = "./figures/"
 
@@ -75,18 +75,26 @@ class Tree:
     #if mode == "debug": print(outlist)
     return outlist
       
-  def evaluate_internal(self):
+  def evaluate_internal(self, mode=0):
     '''does the same as above, but uses the test data that is generated in the constructor'''
     
     results = self.evaluate(self.test)
     out = []
     for i in range(len(results)):
-      if results[i] == self.test[i][-1]:
-        out.append(1)
-      else:
-        out.append(0)
+
+
+      if mode == 0:
+        if results[i] == self.test[i][-1]:
+          out.append(1)
+        else:
+          out.append(0)
+      elif mode == 1:
+        out.append(results[i])
     
     return out
+
+
+  def confusion_constructor(self): return (np.unique(self.labels), np.array(self.test)[:,-1], self.evaluate_internal(mode=1))
 
   def name(self): return self.tree_name
   

@@ -44,10 +44,13 @@ class Testbench():
                     
                     
                     
-                    
+        self.dataset = dataset 
         self.means = means
         self.models = Models
         self.all_samples = all_samples
+        self.confusion = {}
+        self.confusion_matrix()
+
 
     def plotNorm(self):
         
@@ -72,9 +75,43 @@ class Testbench():
         plt.grid(True)
         plt.show()
             
-    def confusion_matricies(self):
-        pass
+    def confusion_matrix(self):
+        for model in self.models:
+            
+            specific_model = model(self.dataset)
+            (labels, actual, guess) = specific_model.confusion_constructor()
+            self.confusion[specific_model.name()] = (confusion_matrix(actual, guess, class_labels=labels))
+        
+        #print(self.confusion)
+        return self.confusion
+        
+    def accuracy(self): 
+       
+       self.accuracies = {}
 
+       for name, matrix in self.confusion.items():
+          self.accuracies[name] = accuracy_f(matrix)
+       
+       return self.accuracies
+    
+    def precision(self): 
+       
+       self.precisions = {}
+       for name, matrix in self.confusion.items():
+          self.precisions[name] = precision_f(matrix)
+       return self.precisions
+    
+    def recall(self):
+       self.recalls = {}
+       for name, matrix in self.confusion.items():
+          self.recalls[name] = recall_f(matrix)
+       return self.recalls
+    
+    def f1(self):
+       self.f1_scores = {}
+       for name, matrix in self.confusion.items():
+          self.f1s_scores[name] = f1_score_f(matrix)
+       return self.f1_scores
 
 
 def confusion_matrix(actuals, predictions, class_labels=None):
@@ -93,20 +130,24 @@ def confusion_matrix(actuals, predictions, class_labels=None):
 
   # if no class_labels are given, we obtain the set of unique class labels from
   # the union of the ground truth annotation and the prediction
-  if not class_labels:
+  if class_labels is None:
       class_labels = np.unique(np.concatenate((actuals, predictions)))
 
   confusion = np.zeros((len(class_labels), len(class_labels)), dtype=int)
 
+     
+
   for i in range(len(predictions)):
     prediction = predictions[i] - 1
     actual = actuals[i] - 1
-    confusion[prediction][actual] = confusion[prediction][actual] + 1
+    confusion[int(prediction)][int(actual)] += 1
 
   return confusion
 
 
-def accuracy(confusion):
+
+
+def accuracy_f(confusion):
   """ Compute the accuracy given the confusion matrix
 
   Args:
@@ -123,7 +164,7 @@ def accuracy(confusion):
       return 0.
 
 
-def precision(confusion):
+def precision_f(confusion):
   """ Compute the precision score per class given the ground truth and predictions
   Also return the macro-averaged precision across classes.
 
@@ -142,7 +183,7 @@ def precision(confusion):
   return (p, macro_p)
 
 
-def recall(confusion):
+def recall_f(confusion):
   """ Compute the recall score per class given confusion matrix
   Also return the macro-averaged recall across classes.
 
@@ -161,7 +202,7 @@ def recall(confusion):
   return (r, macro_r)
 
 
-def f1_score(confusion):
+def f1_score_f(confusion):
   """ Compute the F1-score per class given the ground truth and predictions
 
   Also return the macro-averaged F1-score across classes.

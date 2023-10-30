@@ -9,7 +9,9 @@ split_resolution = 10
 class RandomClassifier:
   def __init__(self, dataset):
     
-    self.unique_labels = []
+    x_values, categories = extract_categories(dataset)
+    self.labels = categories
+
     train, test = split_train_test(dataset, test_proportion)
     self.train = train
     self.test = test
@@ -29,33 +31,47 @@ class RandomClassifier:
     random_indices = np.random.choice(self.unique_labels, len(dataset))
     return random_indices 
   
-  def evaluate_internal(self):
- 
-      out = []
+  def evaluate_internal(self, mode=0):
+      '''
+      Mode of 0 returns an array of 1's and 0's corresponding to correct and incorrect guesses
+      Mode of 1 returns the confusion matrix form, which is the guesses
+      '''
 
-      
+      out = []
       for index, result in enumerate(np.random.choice(self.unique_labels, len(self.test))):
-        if self.test[index][-1] == result:
-            out.append(1)
-        else:
-            out.append(0)
+
+        if mode == 0:
+          if self.test[index][-1] == result:
+              out.append(1)
+          else:
+              out.append(0)
+        elif mode == 1:
+          out.append(result)
       
       return out
   
   def name(self): return self.tree_name
+
+  def confusion_constructor(self): return (np.unique(self.labels), np.array(self.test)[:,-1], self.evaluate_internal(mode=1))
+
   
   
 
 class NNClassifier:
   def __init__(self, dataset):
-    self.unique_labels = []
+    x_values, categories = extract_categories(dataset)
+    self.labels = categories
+
     train, test = split_train_test(dataset, test_proportion)
     self.train = train
     self.test = test
     self.tree_name = "Nearest Neighbour Classifier"
 
-  def evaluate_internal(self):
-    
+  def evaluate_internal(self, mode=0):
+    '''
+    Mode of 0 returns an array of 1's and 0's corresponding to correct and incorrect guesses
+    Mode of 1 returns the confusion matrix form, which is the guesses
+    '''
     out = []
 
     for test_sample in self.test:
@@ -87,16 +103,25 @@ class NNClassifier:
 
 
       #print("Found closest match to be {a} at index {b}".format(a=self.train[closest_index], b=closest_index))
-      if self.train[closest_index][-1] == solution:
-        out.append(1)
-      else:
-        out.append(0)
+      if mode == 0:
+        if self.train[closest_index][-1] == solution:
+          out.append(1)
+        else:
+          out.append(0)
+      elif mode == 1:
+        out.append(self.train[closest_index][-1])
 
     return out
-
-
+  
+  
   def name(self): return self.tree_name
   
+  def confusion_constructor(self): return (np.unique(self.labels), np.array(self.test)[:,-1], self.evaluate_internal(mode=1))
+
+    
+
+
+
 
 
 
