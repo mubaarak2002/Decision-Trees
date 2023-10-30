@@ -55,12 +55,20 @@ class Tree:
     add any other visualisation functions
   '''
 
-  def __init__(self, dataset, max_depth=depth):
+  def __init__(self, dataset, train_given=None, test_given=None, max_depth=depth):
     x_values, categories = extract_categories(dataset)
     self.labels = categories
-    train, test = split_train_test(dataset, test_proportion)
-    self.train = train
-    self.test = test
+
+    #allows you to give train and test data, or generate it automatically
+    if test is None and train is None:
+      train, test = split_train_test(dataset, test_proportion)
+      self.train = train
+      self.test = test
+    else:
+      self.train = train_given
+      self.test = test_given
+
+
     self.depth = max_depth
     self.tree_name = "Decision Tree Classifier"
 

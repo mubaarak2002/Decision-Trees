@@ -113,6 +113,15 @@ class Testbench():
           self.f1s_scores[name] = f1_score_f(matrix)
        return self.f1_scores
 
+    def globalError(self):
+       pass
+
+
+
+
+
+
+
 
 def confusion_matrix(actuals, predictions, class_labels=None):
   """ Compute the confusion matrix.

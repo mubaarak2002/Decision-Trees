@@ -7,14 +7,21 @@ split_resolution = 10
 
 
 class RandomClassifier:
-  def __init__(self, dataset):
+  def __init__(self, dataset, train_given=None, test_given=None):
     
     x_values, categories = extract_categories(dataset)
     self.labels = categories
 
-    train, test = split_train_test(dataset, test_proportion)
-    self.train = train
-    self.test = test
+    #allows you to give train and test data, or generate it automatically
+    if test is None and train is None:
+      train, test = split_train_test(dataset, test_proportion)
+      self.train = train
+      self.test = test
+    else:
+      self.train = train_given
+      self.test = test_given
+
+
     self.fit(dataset)
     self.tree_name = "Random Classifier"
 
@@ -58,13 +65,20 @@ class RandomClassifier:
   
 
 class NNClassifier:
-  def __init__(self, dataset):
+  def __init__(self, dataset, train_given=None, test_given=None):
     x_values, categories = extract_categories(dataset)
     self.labels = categories
 
-    train, test = split_train_test(dataset, test_proportion)
-    self.train = train
-    self.test = test
+    #allows you to give train and test data, or generate it automatically
+    if test is None and train is None:
+      train, test = split_train_test(dataset, test_proportion)
+      self.train = train
+      self.test = test
+    else:
+      self.train = train_given
+      self.test = test_given
+
+
     self.tree_name = "Nearest Neighbour Classifier"
 
   def evaluate_internal(self, mode=0):
