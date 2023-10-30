@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
-
+import random
+import math
 
 class Testbench():
     '''
@@ -113,14 +114,61 @@ class Testbench():
           self.f1s_scores[name] = f1_score_f(matrix)
        return self.f1_scores
 
-    def globalError(self):
-       pass
+    def global_Error(self):
+        
+            
+        num_folds = 10
+        
+        #TODO: this did not need to use indexes, probably replace later?
+        newOrder =list(range(len(self.dataset)))
+        random.shuffle(newOrder)
+        
+        global_error_sum = {}
+        
+        for iteration_num in range(num_folds):
+            test_start = iteration_num * math.floor( (len(self.dataset) / num_folds) )
+            test_finish = (iteration_num + 1) * math.floor( (len(self.dataset) / num_folds) )
+            test_set = []
+            train_set = []
+            
+            for i in range(test_start, test_finish):
+                test_set.append( self.dataset[ newOrder[i] ] )
+                
+            if test_start == 0:
+                
+                for i in range(test_finish, len(self.dataset)):
+                    train_set.append( self.dataset[ newOrder[i] ] )
+            
+            else:
+                for i in range(0, test_start):
+                    train_set.append( self.dataset[newOrder[i]] )
+                for i in range(test_finish, len(self.dataset)):
+                    train_set.append(  self.dataset[newOrder[i]])
+                    
+                    
+            for model in self.models:
+                instance = model(self.dataset, train_given = np.array(train_set), test_given = np.array(test_set))
 
+                success = instance.evaluate_internal()
+                
+                counter = 0
+                for outcome  in success:
+                    if outcome:
+                        counter += 1
+                        
+                accuracy = counter / len(success)
+                
+                if instance.name() not in list(global_error_sum.keys()):
+                    global_error_sum[instance.name()] = accuracy 
+                else: 
+                    global_error_sum[instance.name()] += accuracy
+                    
+                    
+        for model_type, error_sum in global_error_sum.items():
+            global_error_sum[model_type] = error_sum * (num_folds) ** -1
 
-
-
-
-
+        self.global_error = global_error_sum
+        return self.global_error
 
 
 def confusion_matrix(actuals, predictions, class_labels=None):

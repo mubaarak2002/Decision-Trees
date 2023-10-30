@@ -9,7 +9,7 @@ from matplotlib.text import OffsetFrom
 # tuning parameters
 test_proportion = 0.1
 split_resolution = 10
-depth = 100
+depth = 8
 mode = "build"
 figure_root = "./figures/"
 
@@ -60,7 +60,7 @@ class Tree:
     self.labels = categories
 
     #allows you to give train and test data, or generate it automatically
-    if test is None and train is None:
+    if test_given is None and train_given is None:
       train, test = split_train_test(dataset, test_proportion)
       self.train = train
       self.test = test
@@ -73,7 +73,7 @@ class Tree:
     self.tree_name = "Decision Tree Classifier"
 
 
-    self.head = Node(train, 0)
+    self.head = Node(self.train, 0)
 
   def evaluate(self, test_data):
     '''Used for when test data is being given from an outside source'''
@@ -410,6 +410,7 @@ def split_train_test(dataset, test_proportion):
   test = np.array(test)
   return (train, test)
 
+
 def split_folds(n_instances):
     folds = []
     train = []
@@ -425,6 +426,7 @@ def split_folds(n_instances):
 
     return folds
 
+
 def calc_entropy(occurences):
   """Calculates entropy of numpy array elements"""
   total = np.sum(occurences)
@@ -433,7 +435,6 @@ def calc_entropy(occurences):
       np.log2(occurences / total,
               where=(occurences != 0)))  # does not take log of zero
   return entropy
-
 
 
 def decision_tree_learning(training_dataset, depth):
@@ -454,6 +455,7 @@ def decision_tree_learning(training_dataset, depth):
 
 
   pass
+
 
 def find_split(dataset):
   """
@@ -535,8 +537,6 @@ def best_split_in_feature(column, categories, resolution):
       lowest[0] = entropy_list[i]
       lowest[1] = split_point_list[i]
   return lowest
-
-
 
 
 if __name__ == "__main__":

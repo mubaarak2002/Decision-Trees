@@ -13,7 +13,7 @@ class RandomClassifier:
     self.labels = categories
 
     #allows you to give train and test data, or generate it automatically
-    if test is None and train is None:
+    if test_given is None and train_given is None:
       train, test = split_train_test(dataset, test_proportion)
       self.train = train
       self.test = test
@@ -70,7 +70,7 @@ class NNClassifier:
     self.labels = categories
 
     #allows you to give train and test data, or generate it automatically
-    if test is None and train is None:
+    if test_given is None and train_given is None:
       train, test = split_train_test(dataset, test_proportion)
       self.train = train
       self.test = test
