@@ -46,7 +46,7 @@ class RandomClassifier:
   
   
 
-class KNNClassifier:
+class NNClassifier:
   def __init__(self, dataset):
     self.unique_labels = []
     train, test = split_train_test(dataset, test_proportion)
@@ -60,7 +60,7 @@ class KNNClassifier:
 
     for test_sample in self.test:
       solution = test_sample[-1]
-      
+
       closest_index = None
       closest_dist = None
 
