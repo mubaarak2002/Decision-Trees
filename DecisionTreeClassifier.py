@@ -392,11 +392,10 @@ def split_train_test(dataset, test_proportion):
   test = np.array(test)
   return (train, test)
 
-def split_folds(dataset):
+def split_folds(n_instances):
     folds = []
     train = []
     test = []
-    n_instances = dataset
     shuffled_indices = np.random.permutation(n_instances)
     n_folds = 10
     split_indices = np.array_split(shuffled_indices, n_folds)
