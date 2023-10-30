@@ -541,8 +541,8 @@ def confusion_matrix(actuals, predictions, class_labels=None):
   confusion = np.zeros((len(class_labels), len(class_labels)), dtype=int)
 
   for i in range(len(predictions)):
-    prediction = predictions[i]
-    actual = actuals[i]
+    prediction = predictions[i] - 1
+    actual = actuals[i] - 1
     confusion[prediction][actual] = confusion[prediction][actual] + 1
 
   return confusion
