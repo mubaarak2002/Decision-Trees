@@ -8,8 +8,8 @@ from matplotlib.text import OffsetFrom
 
 # tuning parameters
 test_proportion = 0.1
-split_resolution = 10
-depth = 8
+split_resolution = 20
+depth = 50
 mode = "build"
 figure_root = "./figures/"
 
