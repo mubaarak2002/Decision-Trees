@@ -8,7 +8,7 @@ from matplotlib.text import OffsetFrom
 
 # tuning parameters
 test_proportion = 0.1
-split_resolution = 20
+
 depth = 50
 mode = "build"
 figure_root = "./figures/"
@@ -33,7 +33,7 @@ class Tree:
     add any other visualisation functions
   '''
 
-  def __init__(self, dataset, train_given=None, test_given=None, max_depth=depth):
+  def __init__(self, dataset, train_given=None, test_given=None, max_depth=depth,  split_resolution=20):
     x_values, categories = extract_categories(dataset)
     self.labels = categories
 
@@ -46,12 +46,12 @@ class Tree:
       self.train = train_given
       self.test = test_given
 
-
+    self.split_resolution = split_resolution
     self.depth = max_depth
     self.tree_name = "Decision Tree Classifier"
 
 
-    self.head = Node(self.train, 0)
+    self.head = Node(self.train, 0, split_resolution=split_resolution)
 
   def evaluate(self, test_data):
     '''Used for when test data is being given from an outside source'''
@@ -312,7 +312,7 @@ class Node:
 
   '''
   """Node constructor"""
-  def __init__(self, dataset, TreeDepth = 0):
+  def __init__(self, dataset, TreeDepth=0,  split_resolution=20):
 
     self.depth = TreeDepth
     x_values, categories = extract_categories(dataset)
@@ -331,7 +331,7 @@ class Node:
     else:
 
       self.room = None
-      dataset_a, dataset_b, split, feature = find_split(dataset)
+      dataset_a, dataset_b, split, feature = find_split(dataset, split_resolution)
       self.left = Node(dataset_a, TreeDepth + 1)
       self.right = Node(dataset_b, TreeDepth + 1)
 
@@ -416,7 +416,7 @@ def decision_tree_learning(training_dataset, depth):
   pass
 
 
-def find_split(dataset):
+def find_split(dataset, split_resolution=20):
   """
   Finds the best split for the dataset by finding the best split for
   each feature and choosing the one with the highest information gain,
