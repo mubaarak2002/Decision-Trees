@@ -7,10 +7,11 @@ clean_dataset = np.loadtxt("WIFI_db/clean_dataset.txt")
 noisy_dataset = np.loadtxt("WIFI_db/noisy_dataset.txt")
 
 #test = DecisionTreeClassifier.Tree(clean_dataset)
-#test.run_test()
+#test.show()
 
 benchmark = Testbench(clean_dataset, 10, DecisionTreeClassifier.Tree, RandomClassifier.RandomClassifier, RandomClassifier.NNClassifier)
-print(benchmark.global_Error())
+benchmark.all_metrics()
+
 #benchmark.precision()
 #benchmark.plotNorm()
 

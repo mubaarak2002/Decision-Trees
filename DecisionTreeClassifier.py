@@ -9,7 +9,7 @@ from matplotlib.text import OffsetFrom
 # tuning parameters
 test_proportion = 0.1
 split_resolution = 10
-depth = 8
+depth = 10
 mode = "build"
 figure_root = "./figures/"
 
@@ -203,7 +203,7 @@ class Tree:
       radii = h / vertical_bins
 
     #for debugging
-    radii = 0.2
+    radii = 0.02
 
     centres = []
     texts = {}
@@ -382,11 +382,6 @@ class Node:
 
 
 
-
-
-      
-      
-
 def extract_categories(dataset):
   height, width = np.shape(dataset)
   no_of_attrtibutes = width - 1
@@ -439,21 +434,7 @@ def calc_entropy(occurences):
 
 def decision_tree_learning(training_dataset, depth):
 
-  dataset, categories = extract_categories(training_dataset)
-  num_available_labels = np.unique(categories)
-
-  if len(num_available_labels) == 1:
-    '''
-    TODO: If the number of labels avaiable in this node is all the same, 
-    then the recursion must be ended,and this must turn into a leaf
-    '''
-
-    pass
-
-
-
-
-
+  ##TODO: Make this the generate a tree
   pass
 
 

@@ -1,5 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
+from matplotlib.table import Table
 import random
 import math
 
@@ -170,6 +171,43 @@ class Testbench():
         self.global_error = global_error_sum
         return self.global_error
 
+    def all_metrics(self):
+        '''
+        Plot tables of all the different performance evaluation metrics
+        '''
+        print(self.confusion)
+
+        
+        fig, ax = plt.subplots(3, 1, figsize=(12, 4))
+        
+        plotNum = 0
+        for model, matrix in self.confusion.items():
+            col_labs = ["Room: {}".format(x) for x in range(len(matrix[0]))] 
+            row_labs = ["Room: {}".format(x) for x in range(len(matrix[0]))] 
+            val3 = [["" for c in range(10)] for r in range(10)] 
+        
+            ax[plotNum].set_axis_off() 
+            table = ax[plotNum].table( 
+                cellText = matrix,  
+                rowLabels = row_labs,  
+                colLabels = col_labs, 
+                rowColours =["palegreen"] * 10,  
+                colColours =["palegreen"] * 10, 
+                cellLoc ='center',  
+                loc ='upper left')         
+            
+            ax[plotNum].set_title("Confusion Matrix of " + model, 
+                        fontweight ="bold") 
+            
+            plotNum += 1
+        plt.show() 
+
+
+
+        plt.savefig('pyplot-table-original.png',
+                    bbox_inches='tight',
+                    dpi=150
+                    )
 
 def confusion_matrix(actuals, predictions, class_labels=None):
   """ Compute the confusion matrix.
