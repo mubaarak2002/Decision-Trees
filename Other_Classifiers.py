@@ -2,7 +2,6 @@ import random
 import numpy as np
 
 
-test_proportion = 0.1
 split_resolution = 10
 
 
@@ -14,7 +13,7 @@ class RandomClassifier:
 
     #allows you to give train and test data, or generate it automatically
     if test_given is None and train_given is None:
-      train, test = split_train_test(dataset, test_proportion)
+      train, test = split_train_test(dataset)
       self.train = train
       self.test = test
     else:
@@ -71,7 +70,7 @@ class NNClassifier:
 
     #allows you to give train and test data, or generate it automatically
     if test_given is None and train_given is None:
-      train, test = split_train_test(dataset, test_proportion)
+      train, test = split_train_test(dataset)
       self.train = train
       self.test = test
     else:
@@ -147,7 +146,7 @@ def extract_categories(dataset):
   dataset = dataset[:height, :no_of_attrtibutes]
   return dataset, categories
 
-def split_train_test(dataset, test_proportion):
+def split_train_test(dataset, test_proportion=0.1):
   """Splits dataset into train and test sets, according to test_proportion"""
   train = []
   test = []

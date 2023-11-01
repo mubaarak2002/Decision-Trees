@@ -7,7 +7,6 @@ from matplotlib.offsetbox import OffsetBox, AnnotationBbox, TextArea
 from matplotlib.text import OffsetFrom
 
 # tuning parameters
-test_proportion = 0.1
 
 depth = 50
 mode = "build"
@@ -33,13 +32,13 @@ class Tree:
     add any other visualisation functions
   '''
 
-  def __init__(self, dataset, train_given=None, test_given=None, max_depth=depth,  split_resolution=20):
+  def __init__(self, dataset, train_given=None, test_given=None, max_depth=depth, split_resolution=20, split_threshold=0):
     x_values, categories = extract_categories(dataset)
     self.labels = categories
 
     #allows you to give train and test data, or generate it automatically
     if test_given is None and train_given is None:
-      train, test = split_train_test(dataset, test_proportion)
+      train, test = split_train_test(dataset)
       self.train = train
       self.test = test
     else:
@@ -51,7 +50,7 @@ class Tree:
     self.tree_name = "Decision Tree Classifier"
 
 
-    self.head = Node(self.train, 0, split_resolution=split_resolution)
+    self.head = Node(self.train, 0, split_resolution=split_resolution, split_threshold=split_threshold)
 
   def evaluate(self, test_data):
     '''Used for when test data is being given from an outside source'''
@@ -312,7 +311,7 @@ class Node:
 
   '''
   """Node constructor"""
-  def __init__(self, dataset, TreeDepth=0,  split_resolution=20):
+  def __init__(self, dataset, TreeDepth=0,  split_resolution=20, split_threshold=0):
 
     self.depth = TreeDepth
     x_values, categories = extract_categories(dataset)
@@ -329,9 +328,8 @@ class Node:
       self.right = None
       return
     else:
-
       self.room = None
-      dataset_a, dataset_b, split, feature = find_split(dataset, split_resolution)
+      dataset_a, dataset_b, split, feature = find_split(dataset, split_resolution, split_threshold=split_threshold)
       self.left = Node(dataset_a, TreeDepth + 1)
       self.right = Node(dataset_b, TreeDepth + 1)
 
@@ -368,7 +366,7 @@ def extract_categories(dataset):
   return dataset, categories
 
 
-def split_train_test(dataset, test_proportion):
+def split_train_test(dataset, test_proportion=0.1):
   """Splits dataset into train and test sets, according to test_proportion"""
   train = []
   test = []
@@ -416,12 +414,17 @@ def decision_tree_learning(training_dataset, depth):
   pass
 
 
-def find_split(dataset, split_resolution=20):
+def find_split(dataset, split_resolution=20, split_threshold=0):
   """
   Finds the best split for the dataset by finding the best split for
   each feature and choosing the one with the highest information gain,
   then selects highest information gain out of all the features. Returns
   2 datasets after the split and the details of the split
+  
+  split_threshold is a float between 0 and 1, and defines "at least split_threshold % of the data 
+  must be present in the split to form a split" This is to help prevent overfitting of the data.
+  e.g a split threshold of 0 means a split can be only 1 entry if needed, however a split threshold of
+  0.1 means that at least 10% of the data must be in the split in order to make the split
 
   """
   if mode == "debug": print(dataset)
@@ -436,12 +439,36 @@ def find_split(dataset, split_resolution=20):
 
   # finds feature with highest information gain
   best_split = [1000]
-  for i in range(len(all_splits)):
+  
+  # Just split regardless of how small the split is
+  if split_threshold == 0:
+    
+    
+    for i in range(len(all_splits)):
     # information gain is entropy_before - entropy_after
     # largest information gain is smallest entropy_after
-    if all_splits[i][0] < best_split[0]:
-      best_split = all_splits[i]
-      best_split.append(i)
+      if all_splits[i][0] < best_split[0]:
+        best_split = all_splits[i]
+        best_split.append(i)
+        
+  # Only split if threshold is met:
+  else:
+    for split_index, potential_split in enumerate(all_splits):
+      
+      if potential_split[0] < best_split[0]:
+        temporary_split = potential_split
+        temporary_split.append(split_index)
+
+        temporary_dataset_a = dataset[dataset[:, temporary_split[2]] < temporary_split[1], :]
+        temporary_dataset_b = dataset[dataset[:, temporary_split[2]] >= temporary_split[1], :]
+        
+        if len(temporary_dataset_a) >= len(dataset) * split_threshold and len(temporary_dataset_b) >= len(dataset) * split_threshold:
+          best_split = all_splits[i]
+          best_split.append(i)
+        
+      
+      
+
 
   # split dataset according to best_split
   split = best_split[1]

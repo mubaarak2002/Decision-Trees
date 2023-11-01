@@ -4,7 +4,7 @@ from matplotlib.table import Table
 import random
 import math
 
-class Testbench():
+class Model_Comparison_TB():
     '''
     takes in as many classes as you want, and compares their performances in a plot
     Criteria to run test:
@@ -78,9 +78,16 @@ class Testbench():
         plt.show()
             
     def confusion_matrix(self):
+        
+        # Make sure all models use the same test and train data:
+        train, test = split_train_test(self.dataset)
+        self.train = train
+        self.test = test
+        
+        
         for model in self.models:
             
-            specific_model = model(self.dataset)
+            specific_model = model(self.dataset, train_given = train, test_given = test)
             (labels, actual, guess) = specific_model.confusion_constructor()
             self.confusion[specific_model.name()] = (confusion_matrix(actual, guess, class_labels=labels))
         
@@ -112,13 +119,13 @@ class Testbench():
     def f1(self):
        self.f1_scores = {}
        for name, matrix in self.confusion.items():
-          self.f1s_scores[name] = f1_score_f(matrix)
+          self.f1_scores[name] = f1_score_f(matrix)
        return self.f1_scores
 
-    def global_Error(self):
+    def global_Error(self, num_folds=10):
         
             
-        num_folds = 10
+        
         
         #TODO: this did not need to use indexes, probably replace later?
         newOrder =list(range(len(self.dataset)))
@@ -175,39 +182,155 @@ class Testbench():
         '''
         Plot tables of all the different performance evaluation metrics
         '''
-        print(self.confusion)
 
         
-        fig, ax = plt.subplots(3, 1, figsize=(12, 4))
+        fig, ax = plt.subplots(len(self.models), 1, figsize=(12, 4))
         
         plotNum = 0
         for model, matrix in self.confusion.items():
-            col_labs = ["Room: {}".format(x) for x in range(len(matrix[0]))] 
-            row_labs = ["Room: {}".format(x) for x in range(len(matrix[0]))] 
-            val3 = [["" for c in range(10)] for r in range(10)] 
+            col_labs = ["Predicted Room: {}".format(x) for x in range(len(matrix[0]))] 
+            row_labs = ["Actually Room: {}".format(x) for x in range(len(matrix[0]))] 
+
         
             ax[plotNum].set_axis_off() 
             table = ax[plotNum].table( 
                 cellText = matrix,  
                 rowLabels = row_labs,  
                 colLabels = col_labs, 
-                rowColours =["palegreen"] * 10,  
-                colColours =["palegreen"] * 10, 
+                rowColours =["lightblue"] * 10,  
+                colColours =["lightblue"] * 10, 
                 cellLoc ='center',  
                 loc ='upper left')         
             
-            ax[plotNum].set_title("Confusion Matrix of " + model, 
-                        fontweight ="bold") 
+            ax[plotNum].set_title("Confusion Matrix of " + model, fontweight ="bold") 
             
             plotNum += 1
-        plt.show() 
+            
+        plt.savefig('./figures/confusion_matricies.png', dpi=150)
+        
+        
+        fig1, ax1 = plt.subplots(len(self.models), 1)
+        col_labels = ["Precision", "Recall", "F1 Score"]
+        
+        plotNum = 0
+        for model, matrix in self.confusion.items():
+            row_labs = ["Room: {}".format(x) for x in range(len(matrix[0]))]
+
+            
+            p, macrop = precision_f(matrix)
+            accuracy = accuracy_f(matrix)
+            r, macro_r = recall_f(matrix)
+            f, macrof = f1_score_f(matrix)
+            
+            
+            table_data = [np.array( [ "{}%".format(round(elem * 100, 2)) for elem in p ] ), 
+                          np.array( [ "{}%".format(round(elem * 100, 2)) for elem in r ] ) , 
+                          np.array( [ "{}%".format(round(elem * 100, 2)) for elem in f ] )]
+  
+
+            ax1[plotNum].set_axis_off() 
+            table = ax1[plotNum].table( 
+                cellText = np.transpose( np.array( table_data ) ),  
+                rowLabels = row_labs,  
+                colLabels = col_labels, 
+                rowColours =["lightblue"] * 10,  
+                colColours =["lightblue"] * 10, 
+                cellLoc ='center',  
+                loc ='upper left')    
+            
+            ax1[plotNum].set_title("Performance metrics of " + model, fontweight ="bold")      
+            plotNum += 1
+        
+
+        plt.savefig('./figures/performance_metrics.png', dpi=150)
+        
+        # plt.show() 
+
+
+# THIS IS NOT QUITE WORKING YET, SO WILL FIX LATER
+class Split_Hyperparameter_Tuning():
+    '''Tune the Split Parameter'''
+
+    def __init__(self, dataset, tree_model, num_tests=10, num_folds=4):
+        
+        self.dataset = dataset
+        self.trials = {}
+        self.num_tests = num_tests
+        self.num_folds = num_folds
+        
+        
+        newOrder =list(range(len(self.dataset)))
+        random.shuffle(newOrder)
+        
+        self.max = 0.2
+        self.min = 0
+        for test_number in range(num_tests):
+            split_threshold = (test_number * 1/num_tests) * self.max + self.min
+            print("Testing Threshold: ", split_threshold)
+            
+            global_error_sum = 0
+            for fold_iteration_num in range(num_folds):
+                print("Fold: ", fold_iteration_num)
+                test_start = fold_iteration_num * math.floor( (len(self.dataset) / num_folds) )
+                test_finish = (fold_iteration_num + 1) * math.floor( (len(self.dataset) / num_folds) )
+                test_set = []
+                train_set = []
+                
+                for i in range(test_start, test_finish):
+                    test_set.append( self.dataset[ newOrder[i] ] )
+                    
+                if test_start == 0:
+                    
+                    for i in range(test_finish, len(self.dataset)):
+                        train_set.append( self.dataset[ newOrder[i] ] )
+                
+                else:
+                    for i in range(0, test_start):
+                        train_set.append( self.dataset[newOrder[i]] )
+                    for i in range(test_finish, len(self.dataset)):
+                        train_set.append(  self.dataset[newOrder[i]])
+
+                instance = tree_model(self.dataset, train_given = np.array(train_set), test_given = np.array(test_set), split_threshold=split_threshold)
+                success = instance.evaluate_internal()
+                
+                counter = 0
+                for outcome  in success:
+                    if outcome:
+                        counter += 1
+                        
+                accuracy = counter / len(success)
+                global_error_sum += accuracy
+            
+            
+            self.trials[split_threshold] = global_error_sum * (num_folds) ** -1      
+        print(self.trials)
+
+
+    def plot_performance(self):
+        '''Plot Global Accuracy for different split thresholds, assuming global accuracy = 1 - global error'''
+        
+        # This test is quite computationally expencive, so this is the results pre-stored to make runniung the test less long
+        data = {0.0:                  0.964, 
+                0.020000000000000004: 0.9664999999999999, 
+                0.04000000000000001:  0.9664999999999999, 
+                0.06:                 0.9664999999999999, 
+                0.08000000000000002:  0.9664999999999999, 
+                0.1:                  0.9664999999999999, 
+                0.12:                 0.9664999999999999, 
+                0.13999999999999999:  0.9664999999999999,
+                0.16000000000000003:  0.9664999999999999, 
+                0.18000000000000002:  0.9664999999999999
+                }
+        
+        split_threshold = list(data.keys())
+        split_accuracy = list(data.values())
+        
+        plt.plot(split_threshold, split_accuracy )
+        
 
 
 
-        plt.savefig('pyplot-table-original.png',
-                    bbox_inches='tight',
-                    dpi=150
-                    )
+
 
 def confusion_matrix(actuals, predictions, class_labels=None):
   """ Compute the confusion matrix.
@@ -238,8 +361,6 @@ def confusion_matrix(actuals, predictions, class_labels=None):
     confusion[int(prediction)][int(actual)] += 1
 
   return confusion
-
-
 
 
 def accuracy_f(confusion):
@@ -313,8 +434,8 @@ def f1_score_f(confusion):
           - macro-f1 is macro-averaged f1-score (a float)
   """
 
-  (precisions, macro_p) = precision(confusion)
-  (recalls, macro_r) = recall(confusion)
+  (precisions, macro_p) = precision_f(confusion)
+  (recalls, macro_r) = recall_f(confusion)
 
   # just to make sure they are of the same length
   assert len(precisions) == len(recalls)
@@ -327,6 +448,19 @@ def f1_score_f(confusion):
     
     
     
-        
+def split_train_test(dataset, test_proportion=0.1):
+  """Splits dataset into train and test sets, according to test_proportion"""
+  train = []
+  test = []
+  for i in range(len(dataset)):
+    choice_test = random.random() < test_proportion
+    if choice_test:
+      test.append(dataset[i])
+    else:
+      train.append(dataset[i])
+
+  train = np.array(train)
+  test = np.array(test)
+  return (train, test)
 
       
