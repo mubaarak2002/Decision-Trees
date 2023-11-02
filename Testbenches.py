@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.table import Table
+import Decision_Tree_Classifier
 import random
 import math
 
@@ -18,7 +19,7 @@ class Model_Comparison_TB():
         - All test benches must have an evaluate_internal() function to return the test and return a list of either 1 or 0, denoting a success/failiure for every test case
     '''
   
-    def __init__(self, dataset, num_trials=10, *args):
+    def __init__(self, dataset, num_trials=10, tree_depth=10, *args):
         
         Models = []
         for testMethod in args:
@@ -26,9 +27,11 @@ class Model_Comparison_TB():
         means = {}
         all_samples = {}
         for index, model in enumerate(Models):
-            
-            for trial in range(num_trials):
-                sample = model(dataset)
+            for trial in range(num_trials):       
+                if model == Decision_Tree_Classifier.Tree:
+                    sample = model(dataset, tree_depth)
+                else:
+                    sample = model(dataset)
                 results = sample.evaluate_internal()
 
                 if sample.name() not in list(all_samples.keys()):
@@ -45,7 +48,7 @@ class Model_Comparison_TB():
                 means[sample.name()].append(success_rate / len(results))
                     
                     
-                    
+        self.tree_depth = tree_depth             
         self.dataset = dataset 
         self.means = means
         self.models = Models
@@ -77,20 +80,61 @@ class Model_Comparison_TB():
         plt.grid(True)
         plt.show()
             
-    def confusion_matrix(self):
-        
-        # Make sure all models use the same test and train data:
-        train, test = split_train_test(self.dataset)
-        self.train = train
-        self.test = test
+    def confusion_matrix(self, train_given=None, test_given=None, num_folds=10):
         
         
-        for model in self.models:
+        #TODO: this did not need to use indexes, probably replace later?
+        newOrder =list(range(len(self.dataset)))
+        random.shuffle(newOrder)
+        confusion = {}
+        
+        for iteration_num in range(num_folds):
+            test_start = iteration_num * math.floor( (len(self.dataset) / num_folds) )
+            test_finish = (iteration_num + 1) * math.floor( (len(self.dataset) / num_folds) )
+            test_set = []
+            train_set = []
             
-            specific_model = model(self.dataset, train_given = train, test_given = test)
-            (labels, actual, guess) = specific_model.confusion_constructor()
-            self.confusion[specific_model.name()] = (confusion_matrix(actual, guess, class_labels=labels))
+            for i in range(test_start, test_finish):
+                test_set.append( self.dataset[ newOrder[i] ] )
+                
+            if test_start == 0:
+                
+                for i in range(test_finish, len(self.dataset)):
+                    train_set.append( self.dataset[ newOrder[i] ] )
+            
+            else:
+                for i in range(0, test_start):
+                    train_set.append( self.dataset[newOrder[i]] )
+                for i in range(test_finish, len(self.dataset)):
+                    train_set.append(  self.dataset[newOrder[i]])
         
+        
+        
+    
+            for model in self.models:
+                
+                if model == Decision_Tree_Classifier.Tree:
+                    specific_model = model(self.dataset, self.tree_depth, train_given = np.array(train_set), test_given = np.array(test_set))
+                else:
+                    specific_model = model(self.dataset, train_given = train_set, test_given = test_set)
+
+                (labels, actual, guess) = specific_model.confusion_constructor()
+                
+                
+                name = specific_model.name()
+                if name not in list(confusion.keys()):
+                    confusion[name] = (confusion_matrix(actual, guess, class_labels=labels))    
+                
+                else:
+                    toAdd = (confusion_matrix(actual, guess, class_labels=labels))
+                    for row_index, row in enumerate(toAdd):
+                        
+                        for col_index, cell in enumerate(row):
+                            
+                            confusion[name][row_index][col_index] += cell
+
+        
+        self.confusion = confusion
         #print(self.confusion)
         return self.confusion
         
@@ -123,9 +167,7 @@ class Model_Comparison_TB():
        return self.f1_scores
 
     def global_Error(self, num_folds=10):
-        
-            
-        
+
         
         #TODO: this did not need to use indexes, probably replace later?
         newOrder =list(range(len(self.dataset)))

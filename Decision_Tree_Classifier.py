@@ -150,7 +150,7 @@ class Tree:
 
     #need to start on 1, not 0, so add one
     max_tree_depth += 1
-    if 1: print("Tree found with max depth {a}, spanning {b} left entries and {c} right entries".format(a=max_tree_depth, b=left_counter, c=right_counter))
+    if mode == "debug": print("Tree found with max depth {a}, spanning {b} left entries and {c} right entries".format(a=max_tree_depth, b=left_counter, c=right_counter))
 
     total_span = left_counter + right_counter
 
@@ -483,40 +483,19 @@ def find_split(dataset, split_resolution=20, split_threshold=0):
   for i in range(width - 1):
     column = dataset[:, i]
     all_splits.append(
-        best_split_in_feature(column, categories, split_resolution))
+        best_split_in_feature(column, categories, split_resolution, split_threshold=0))
 
   # finds feature with highest information gain
   best_split = [1000]
-  
-  # Just split regardless of how small the split is
-  if split_threshold == 0:
-    
-    
-    for i in range(len(all_splits)):
-    # information gain is entropy_before - entropy_after
-    # largest information gain is smallest entropy_after
-      if all_splits[i][0] < best_split[0]:
-        best_split = all_splits[i]
-        best_split.append(i)
-        
-  # Only split if threshold is met:
-  else:
-    for split_index, potential_split in enumerate(all_splits):
-      
-      if potential_split[0] < best_split[0]:
-        temporary_split = potential_split
-        temporary_split.append(split_index)
 
-        temporary_dataset_a = dataset[dataset[:, temporary_split[2]] < temporary_split[1], :]
-        temporary_dataset_b = dataset[dataset[:, temporary_split[2]] >= temporary_split[1], :]
-        
-        if len(temporary_dataset_a) >= len(dataset) * split_threshold and len(temporary_dataset_b) >= len(dataset) * split_threshold:
-          best_split = all_splits[i]
-          best_split.append(i)
-        
+    
+  for i in range(len(all_splits)):
+  # information gain is entropy_before - entropy_after
+  # largest information gain is smallest entropy_after
+    if all_splits[i][0] < best_split[0]:
+      best_split = all_splits[i]
+      best_split.append(i)
       
-      
-
 
   # split dataset according to best_split
   split = best_split[1]
@@ -529,7 +508,7 @@ def find_split(dataset, split_resolution=20, split_threshold=0):
   return dataset_a, dataset_b, split, feature
 
 
-def best_split_in_feature(column, categories, resolution):
+def best_split_in_feature(column, categories, resolution, split_threshold=0):
   """
   finds best split of a feature
   generates 'resolution' number of splits and returns the one with
