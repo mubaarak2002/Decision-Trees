@@ -2,8 +2,17 @@ import Decision_Tree_Classifier
 import Other_Classifiers
 import Testbenches as TB
 import numpy as np
+import sys
 
-dataset_path = "WIFI_db/clean_dataset.txt"
+if len(sys.argv) == 3:
+  dataset_path = sys.argv[1]
+  depth = sys.argv[2]
+else:
+  print("arguements taken: <dataset path> <depth>")
+  quit()
+print("Loading dataset:", dataset_path)
+print("Tree depth:", depth)
+
 dataset = np.loadtxt(dataset_path)
 
 test = Decision_Tree_Classifier.Tree(dataset)
