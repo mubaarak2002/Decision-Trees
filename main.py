@@ -15,7 +15,7 @@ print("Tree depth:", depth)
 
 dataset = np.loadtxt(dataset_path)
 
-test = Decision_Tree_Classifier.Tree(dataset)
+test = Decision_Tree_Classifier.Tree(dataset, max_depth = depth)
 #print(test.evaluate([[-68,	-58,	-65,	-65,	-76,	-87,	-82,	1]]))
 test.show()
 
