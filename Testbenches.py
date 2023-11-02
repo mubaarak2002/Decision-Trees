@@ -71,7 +71,7 @@ class Model_Comparison_TB():
             plt.plot(x, pdf, label=f"{method}, with Mean={round(mean, 2)}")
             
         plt.title("Performance Distribution of Multiple Machine Learning Models")
-        plt.xlabel("Success Rate")
+        plt.xlabel("Accuracy")
         plt.ylabel("Probability Concentration")
         plt.legend()
         plt.grid(True)
@@ -188,8 +188,8 @@ class Model_Comparison_TB():
         
         plotNum = 0
         for model, matrix in self.confusion.items():
-            col_labs = ["Predicted Room: {}".format(x) for x in range(len(matrix[0]))] 
-            row_labs = ["Actually Room: {}".format(x) for x in range(len(matrix[0]))] 
+            col_labs = ["Predicted Room: {}".format(x) for x in range(1, len(matrix[0]) + 1)] 
+            row_labs = ["Actually Room: {}".format(x) for x in range(1, len(matrix[0]) + 1)] 
 
         
             ax[plotNum].set_axis_off() 
@@ -214,7 +214,7 @@ class Model_Comparison_TB():
         
         plotNum = 0
         for model, matrix in self.confusion.items():
-            row_labs = ["Room: {}".format(x) for x in range(len(matrix[0]))]
+            row_labs = ["Room: {}".format(x) for x in range(1, len(matrix[0]) + 1)]
 
             
             p, macrop = precision_f(matrix)

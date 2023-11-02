@@ -32,9 +32,12 @@ class Tree:
     add any other visualisation functions
   '''
 
-  def __init__(self, dataset, train_given=None, test_given=None, max_depth=depth, split_resolution=20, split_threshold=0):
+  def __init__(self, dataset, max_depth, train_given=None, test_given=None, split_resolution=20, split_threshold=0):
     x_values, categories = extract_categories(dataset)
     self.labels = categories
+
+    global depth
+    depth = max_depth
 
     #allows you to give train and test data, or generate it automatically
     if test_given is None and train_given is None:
@@ -51,6 +54,7 @@ class Tree:
 
 
     self.head = Node(self.train, 0, split_resolution=split_resolution, split_threshold=split_threshold)
+    self.head.clean()
 
   def evaluate(self, test_data):
     '''Used for when test data is being given from an outside source'''
@@ -342,7 +346,7 @@ class Node:
       self.left = None
       self.right = None
       return
-    elif(TreeDepth == depth):
+    elif(TreeDepth == int(depth)):
       majority = labels[np.argmax(counts)]
       self.room = majority
       self.left = None
@@ -358,6 +362,16 @@ class Node:
       self.feature = feature
       #split is the value its split on
       self.split = split
+
+  def clean(self):
+    if(self.left.room == None):
+      self.left.clean()
+    if(self.right.room == None):
+      self.right.clean()
+    if((self.left.room != None) and self.left.room == self.right.room):
+      self.room = self.left.room
+      self.left = None
+      self.right = None
 
   def print(self):
     if self.room is not None:
