@@ -16,6 +16,7 @@ print("Tree depth:", depth)
 dataset = np.loadtxt(dataset_path)
 
 test = Decision_Tree_Classifier.Tree(dataset)
+#print(test.evaluate([[-68,	-58,	-65,	-65,	-76,	-87,	-82,	1]]))
 test.show()
 
 #benchmark = TB.Model_Comparison_TB(dataset, 10, Decision_Tree_Classifier.Tree, Other_Classifiers.RandomClassifier, Other_Classifiers.NNClassifier)

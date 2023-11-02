@@ -114,15 +114,24 @@ class Tree:
     right_counter = 0
     max_tree_depth = 0
 
+    def find_max_depth(curr_node):
+      
+      if curr_node.room is not None:
+        return curr_node.depth
+      else:
+        L_depth = find_max_depth(curr_node.left)
+        R_depth = find_max_depth(curr_node.right)
+        
+        return L_depth if (L_depth > R_depth) else R_depth
+
+    max_tree_depth = find_max_depth(self.head)
+    
+    
     root = self.head
     while True:
 
       if root.left is not None:
         left_counter += 1
-
-        if root.depth > max_tree_depth:
-          max_tree_depth = root.depth
-
         root = root.left
       else:
         break
@@ -131,10 +140,6 @@ class Tree:
     while True:
       if root.right is not None:
         right_counter += 1
-
-        if root.depth > max_tree_depth:
-          max_tree_depth = root.depth
-
         root = root.right
       else:
         break
@@ -334,21 +339,31 @@ class Node:
   """Node constructor"""
   def __init__(self, dataset, TreeDepth=0,  split_resolution=20, split_threshold=0):
 
+    #print("\n\n\n\----------------------------------------------------------------")
+    #print(TreeDepth)
+    
+    
     self.depth = TreeDepth
     x_values, categories = extract_categories(dataset)
     [labels, counts] = np.unique(categories, return_counts=True)
+    #print(labels)
+    #print("There are {} labels".format(len(labels)))
     if(len(labels) == 1):
+      #print("test1")
       self.room = labels[0]
       self.left = None
       self.right = None
       return
-    elif(TreeDepth == depth):
+    elif(TreeDepth == int(depth)):
+      if(len(labels) == 1): print("help")
+      #print("test2")
       majority = labels[np.argmax(counts)]
       self.room = majority
       self.left = None
       self.right = None
       return
     else:
+      #print("test3")
       self.room = None
       dataset_a, dataset_b, split, feature = find_split(dataset, split_resolution, split_threshold=split_threshold)
       self.left = Node(dataset_a, TreeDepth + 1)
