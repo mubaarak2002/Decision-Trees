@@ -8,7 +8,7 @@ from matplotlib.text import OffsetFrom
 
 # tuning parameters
 
-depth = 50
+depth = 8
 mode = "build"
 figure_root = "./figures/"
 
@@ -180,7 +180,7 @@ class Tree:
       radii = h / vertical_bins - 0.2
 
     #for debugging
-    radii = 0.02
+    radii = 0.06
 
     centres = []
     texts = {}
@@ -219,19 +219,78 @@ class Tree:
       
       return dot_centre
       
-    def centres_post_processing():
+    def centres_post_processing(centres_in, arrows_in, texts_in, width=w, side_padding=top_offset):
       '''
       Optemises the horisontal space on the screen to make it such that if one side of 
       the tree is larger than the other the tree is shifted accordingly
       '''
 
-      pass
+      n_centres = []
+      n_arrows = {}
+      n_texts = {}
+      print(arrows_in)
+      print("\n\n")
+      centres_map = {}
+
+      centres_in.sort(key=lambda a: a[0])
+      
+
+      
+      for i, centre in enumerate(centres_in):
+        
+        if i == 0:
+          new_centre =  (  side_padding + ( (i / len(centres_in)) * width  )  , centres_in[i][1] )
+          centres_map[centre] = new_centre
+          n_centres.append( new_centre )
+          n_texts[n_centres[-1]] = texts_in[centres_in[i]]
+          
+          if centres_in[i] in list(arrows_in.keys()):
+            n_arrows[n_centres[-1]] = arrows_in[centres_in[i]]
+          
+              
+          pass
+        if i == len(centres_in) - 1:
+          new_centre = (  ( (i / len(centres_in)) * width  )  , centres_in[i][1] )
+          n_centres.append(  new_centre  )
+          centres_map[centre] = new_centre
+          if centres_in[i] in list(arrows_in.keys()):
+            n_arrows[n_centres[-1]] = arrows_in[centres_in[i]]
+            
+            
+          n_texts[n_centres[-1]] = texts_in[centres_in[i]]
+          pass
+        
+        else:
+          new_centre = (  ( (i / len(centres_in)) * width  )  , centres_in[i][1] )
+          n_centres.append(  new_centre  )
+          centres_map[centre] = new_centre
+          if centres_in[i] in list(arrows_in.keys()):
+            n_arrows[n_centres[-1]] = arrows_in[centres_in[i]]
+            
+            
+          n_texts[new_centre] = texts_in[centres_in[i]]
+          
+      
+      for start, end in n_arrows.items():
+        out = []
+        for endPoint in end:
+          out.append(centres_map[endPoint])
+          
+        n_arrows[start] = out
+        
+        
+      return n_centres, n_arrows, n_texts
 
     
     L = plotTree(root.left, 0.2, midpoint, height_index + 1)
     R = plotTree(root.right, midpoint, w - 0.2, height_index + 1)
     arrows[root_centre] = [L,R]
   
+    new_centres, new_arrows, new_texts = centres_post_processing(centres, arrows, texts)
+    
+    centres = new_centres
+    arrows = new_arrows
+    texts = new_texts
     
     #draw all the nodes
     for index, centre in enumerate(centres):
