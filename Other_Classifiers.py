@@ -2,8 +2,6 @@ import random
 import numpy as np
 
 
-split_resolution = 10
-
 
 class RandomClassifier:
   def __init__(self, dataset, train_given=None, test_given=None):

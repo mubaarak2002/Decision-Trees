@@ -175,9 +175,9 @@ class Tree:
 
     #Tree Construction
     if horisontal_bins > vertical_bins:
-      radii = w / horisontal_bins
+      radii = w / horisontal_bins - 0.2
     else:
-      radii = h / vertical_bins
+      radii = h / vertical_bins - 0.2
 
     #for debugging
     radii = 0.02
@@ -191,11 +191,11 @@ class Tree:
     root = self.head
     midpoint = w/2
     height_index = 0
-
+    top_offset = 0.1
 
 
     #the root node
-    root_centre = ( (midpoint) , ( h *  ( ( vertical_bins - height_index ) / vertical_bins ) - radii  ) )
+    root_centre = ( (midpoint) , ( h *  ( ( vertical_bins - height_index ) / vertical_bins ) - radii - top_offset ) )
     centres.append( root_centre )
     texts[root_centre] = root.print()
 
@@ -207,7 +207,7 @@ class Tree:
       
       
       
-      dot_centre = ( (max + min) / 2 , ( h *  ( ( vertical_bins - bin_depth ) / vertical_bins ) + radii  ) )
+      dot_centre = ( (max + min) / 2 , ( h *  ( ( vertical_bins - bin_depth ) / vertical_bins ) + radii + top_offset  ) )
       centres.append( dot_centre )
       texts[dot_centre] = tree.print()
       if tree.left is not None:
@@ -219,11 +219,17 @@ class Tree:
       
       return dot_centre
       
-      
+    def centres_post_processing():
+      '''
+      Optemises the horisontal space on the screen to make it such that if one side of 
+      the tree is larger than the other the tree is shifted accordingly
+      '''
+
+      pass
 
     
-    L = plotTree(root.left, 0, midpoint, height_index + 1)
-    R = plotTree(root.right, midpoint, w, height_index + 1)
+    L = plotTree(root.left, 0.2, midpoint, height_index + 1)
+    R = plotTree(root.right, midpoint, w - 0.2, height_index + 1)
     arrows[root_centre] = [L,R]
   
     
