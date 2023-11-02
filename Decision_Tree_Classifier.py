@@ -141,7 +141,7 @@ class Tree:
 
     #need to start on 1, not 0, so add one
     max_tree_depth += 1
-    if mode == "debug": print("Tree found with max depth {a}, spanning {b} left entries and {c} right entries".format(a=max_tree_depth, b=left_counter, c=right_counter))
+    if 1: print("Tree found with max depth {a}, spanning {b} left entries and {c} right entries".format(a=max_tree_depth, b=left_counter, c=right_counter))
 
     total_span = left_counter + right_counter
 
@@ -210,27 +210,31 @@ class Tree:
       Takes the current remaining portion of the screen and splits it into two, then completes the rest of the tree in those halves of the screen
       '''
       
-      
-      
       dot_centre = ( (max + min) / 2 , ( h *  ( ( vertical_bins - bin_depth ) / vertical_bins ) + radii + top_offset  ) )
       centres.append( dot_centre )
       texts[dot_centre] = tree.print()
-      if tree.left is not None:
+      new_midpoint = (max + min) / 2
+      if tree.room is None:
         
-        new_midpoint = (max + min) / 2
-
-        #Allow nodes to interfear in previous node's spaces if the nodes overlap
-        if new_midpoint - min > radii:
+      
+        #There tree has enough space to grow
+        if new_midpoint - min > radii and max - new_midpoint > radii ** 0.5:
           L = plotTree(tree.left, min, new_midpoint, bin_depth + 1)
-        else: 
-
-          L = plotTree(tree.left, new_midpoint - 4 * radii, new_midpoint, bin_depth + 1)
-
-        
-        if max - new_midpoint > radii ** 0.5:
           R = plotTree(tree.right, new_midpoint, max, bin_depth + 1)
+          
+        #The Tree does not have space to grow, so some ammendments need to be made
         else:
-          R = plotTree(tree.right, new_midpoint, new_midpoint + 4 * radii, bin_depth + 1)
+          #The new nodes will intersect with each other 
+          if new_midpoint - 4 * radii > 0:
+            L = plotTree(tree.left, new_midpoint - 4 * radii, new_midpoint, bin_depth + 1)
+            R = plotTree(tree.right, new_midpoint, new_midpoint + 4 * radii, bin_depth + 1)
+
+          #The Tree is growing into the left hand side of the wall
+          else:
+            L = plotTree(tree.left, radii, new_midpoint + 4 * radii, bin_depth + 1)
+            R = plotTree(tree.right, new_midpoint + 4 * radii, new_midpoint + 8 * radii, bin_depth + 1)
+
+
 
 
         arrows[dot_centre] = [L,R]
