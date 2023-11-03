@@ -15,6 +15,9 @@ figure_root = "./figures/"
 #needs to be declared in global scope
 annotations = []
 
+# hide - "RuntimeWarning: invalid value encountered in divide"
+np.seterr(divide='ignore', invalid='ignore')
+
 class Tree:
   '''
   Construtor:
