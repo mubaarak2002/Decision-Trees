@@ -4,6 +4,7 @@ from matplotlib.table import Table
 import Decision_Tree_Classifier
 import random
 import math
+import multiprocessing as mp
 
 class Model_Comparison_TB():
     '''
@@ -120,19 +121,21 @@ class Model_Comparison_TB():
 
                 (labels, actual, guess) = specific_model.confusion_constructor()
                 
-                #if model == Decision_Tree_Classifier.Tree: print([actual, guess])
-                
                 
                 name = specific_model.name()
                 if name not in list(confusion.keys()):
-                    confusion[name] = np.array(confusion_matrix(actual, guess, class_labels=labels))
+                    confusion[name] = (confusion_matrix(actual, guess, class_labels=labels))
                     
                 else:
                     toAdd = (confusion_matrix(actual, guess, class_labels=labels))
-                
-                    confusion[name] += np.array(toAdd)
+                    for row_index, row in enumerate(toAdd):
+                        
+                        for col_index, cell in enumerate(row):
+                            
+                            confusion[name][row_index][col_index] += cell
+                            #confusion[name][row_index][col_index] += cell / num_folds
 
-        if(1): #used for quick disabling
+        if(0):
             for name, matrix in confusion.items():     
                 for rowIndex, row in enumerate(matrix):
                     for colIndex, cell in enumerate(row):
@@ -203,11 +206,8 @@ class Model_Comparison_TB():
                     
                     
             for model in self.models:
-                if model == Decision_Tree_Classifier.Tree:
-                    instance = model(self.dataset, self.tree_depth, train_given = np.array(train_set), test_given = np.array(test_set))
-                else:
-                    instance = model(self.dataset, train_given = np.array(train_set), test_given = np.array(test_set))
-                
+                instance = model(self.dataset, train_given = np.array(train_set), test_given = np.array(test_set))
+
                 success = instance.evaluate_internal()
                 
                 counter = 0
@@ -236,7 +236,7 @@ class Model_Comparison_TB():
 
         
         fig, ax = plt.subplots(len(self.models), 1, figsize=(12, 4))
-        self.global_Error()
+        
         plotNum = 0
         for model, matrix in self.confusion.items():
             col_labs = ["Predicted Room: {}".format(x) for x in range(1, len(matrix[0]) + 1)] 
@@ -254,12 +254,13 @@ class Model_Comparison_TB():
                 loc ='upper left')         
             
             ax[plotNum].set_title("Confusion Matrix of {a} over {c} folds with Global Error {b}%".format(a=model, b= round((1 - self.global_error[model]) * 100, 2), c=self.num_folds ), fontweight ="bold") 
+            ax[plotNum].set_title("Confusion Matrix of " + model, fontweight ="bold") 
             
             plotNum += 1
             
         plt.savefig('./figures/confusion_matricies.png', dpi=150)
         
-
+        
         fig1, ax1 = plt.subplots(len(self.models), 1)
         col_labels = ["Precision", "Recall", "F1 Score"]
         
@@ -289,8 +290,7 @@ class Model_Comparison_TB():
                 cellLoc ='center',  
                 loc ='upper left')    
             
-
-            ax1[plotNum].set_title("Performance Metrics of {a}".format(a=model), fontweight ="bold")      
+            ax1[plotNum].set_title("Performance metrics of " + model, fontweight ="bold")      
             plotNum += 1
         
 
@@ -636,12 +636,27 @@ class Depth_Hyperparameter_Tuning():
         
 
 
-                       
+    def run(self):
+        manager = mp.Manager()
+        depth = manager.dict()
+        depth_num = []
+        n_threads = mp.cpu_count()
+        print("Starting multiprocessing on", n_threads, "threads")
+        if n_threads == None: n_threads = 8
+        pool = mp.Pool(n_threads)
+        for i in range(self.depth_min, self.depth_max + 1):
+            depth_num.append(i)
+
+        depth = pool.map(self.depth_test, iterable= depth_num)
             
-    
-    
-    
-    
+        pool.close()
+        pool.join()
+
+        print('Done', flush=True)
+        print(list(zip(depth_num, depth)))
+        
+
+
 
 
 
@@ -763,7 +778,7 @@ def confusion_matrix(actuals, predictions, class_labels=None):
   if class_labels is None:
       class_labels = np.unique(np.concatenate((actuals, predictions)))
 
-  confusion = np.zeros((len(class_labels), len(class_labels)), dtype=float)
+  confusion = np.zeros((len(class_labels), len(class_labels)), dtype=int)
 
      
 
@@ -875,4 +890,6 @@ def split_train_test(dataset, test_proportion=0.1):
   test = np.array(test)
   return (train, test)
 
+if __name__ == '__main__':
+    pass
       
