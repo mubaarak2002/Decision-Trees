@@ -27,6 +27,10 @@ def main():
      print("Updating Metrics in the figures folder")
      benchmark = TB.Model_Comparison_TB(dataset, 10, depth, Decision_Tree_Classifier.Tree, Other_Classifiers.RandomClassifier, Other_Classifiers.NNClassifier)
      benchmark.all_metrics()
+     
+  if mode == "depth_benchmark":
+    hyperParam = TB.Depth_Hyperparameter_Tuning(dataset, Decision_Tree_Classifier.Tree)
+    hyperParam.show()
 
 
   

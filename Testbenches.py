@@ -603,7 +603,6 @@ class Depth_Hyperparameter_Tuning():
                 depth[depth_test] = test_instance.confusion_matrix()["Decision Tree Classifier"]
 
         self.depth = depth
-        print(depth)
         
     
     def show(self):
