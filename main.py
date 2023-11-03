@@ -15,8 +15,15 @@ def main():
 
   print("Loading dataset:", dataset_path)
   dataset = np.loadtxt(dataset_path)
-  
 
+  if depth == "tune":
+    if dataset_path == "WIFI_db/noisy_dataset.txt":
+      hyperParam = TB.Depth_Hyperparameter_Tuning(dataset, Decision_Tree_Classifier.Tree, name = "noisy")
+    else:
+      hyperParam = TB.Depth_Hyperparameter_Tuning(dataset, Decision_Tree_Classifier.Tree, name = "clean")
+      
+    depth = hyperParam.run()
+    
   if mode == "show_tree":
      print("Tree depth:", depth)
      print("Showing the Tree for the {} dataset".format(dataset_path))
@@ -30,15 +37,6 @@ def main():
      benchmark = TB.Model_Comparison_TB(dataset, 10, depth, Decision_Tree_Classifier.Tree, Other_Classifiers.RandomClassifier, Other_Classifiers.NNClassifier)
      benchmark.all_metrics()
      print("All Metric Figures updated in the ./figures directory")
-     
-  elif mode == "depth_benchmark":
-    print("Tree depth ignored, running range [4,70]")
-    if dataset_path == "WIFI_db/noisy_dataset.txt":
-      hyperParam = TB.Depth_Hyperparameter_Tuning(dataset, Decision_Tree_Classifier.Tree, name = "noisy")
-    else:
-      hyperParam = TB.Depth_Hyperparameter_Tuning(dataset, Decision_Tree_Classifier.Tree, name = "clean")
-      
-    hyperParam.run()
     
   elif mode == "normal":
     print("Generating Normal Distribution ...")

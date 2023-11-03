@@ -320,27 +320,23 @@ class Depth_Hyperparameter_Tuning():
     (this may not always be the best as it is likely to get high performance due to overfitting)
     
     '''
-    #clean:
-    #best depth: 17 , accuracy: 0.9694999999999998
-
-    #noisy:
-    #best depth: 52 , accuracy: 0.8574999999999999
-    
-    def __init__(self, dataset, tree_model, depth_min = 5, depth_max = 70, num_folds=10, name="clean"):
+    def __init__(self, dataset, tree_model, depth_min = 5, depth_max = 40, num_folds=10, name="clean"):
         
         #assign each parameter to it's corresponding class attribute
         self.DataName = name
         self.dataset = dataset
         self.tree_model = tree_model
-        self.depth_min = depth_min
-        self.depth_max = depth_max
         self.num_folds = num_folds
         newOrder =list(range(len(self.dataset)))
         random.shuffle(newOrder)
-        self.newOrder = newOrder
-        
+        self.newOrder = newOrder    
 
     def depth_test(self, depth_num):
+        '''
+        Trains and tests a dataset on n fold splits at specific depth
+
+        '''
+        
         depth_avgs = []
         
         for iteration_num in range(self.num_folds):
@@ -366,7 +362,7 @@ class Depth_Hyperparameter_Tuning():
                     train_set.append( self.dataset[self.newOrder[i]] )
                 for i in range(test_finish, len(self.dataset)):
                     train_set.append(  self.dataset[self.newOrder[i]])
-            
+                        
             #create an instance of the tree, and evaluate it
             instance = self.tree_model(self.dataset, depth_num, train_given=np.array(train_set), test_given=np.array(test_set))
             results = instance.evaluate_internal()
@@ -380,27 +376,31 @@ class Depth_Hyperparameter_Tuning():
         return depth_avgs
 
 
-    def run(self):
-        '''This function would take a very very long time to run, so uses multiple threads to make runtime much faster'''
+    def run(self,depth_num = [5,7,10,12,15,17,20,25,30,35,40,45,50,60,70,80,90,100,120,140,160,180,200]):
+        '''
+        Uses multiprocessing to simultaeneously train and test the dataset at
+        each of the follow depths in array depth_num
+        
+        Computes best depth based on highest accuracy and returns the depth
+
+        '''
+        
         print("Running hyperparameter tuning on depth paramter")
         manager = mp.Manager()
         depth = manager.dict()
-        depth_num = []
         n_threads = mp.cpu_count()
         print("Starting multiprocessing on", n_threads, "threads")
         if n_threads == None: n_threads = 8
         pool = mp.Pool(n_threads)
-        
-        for i in range(self.depth_min, self.depth_max + 1):
-            depth_num.append(i)
-
+        #spawn threads for each depth
         depth = pool.map(self.depth_test, iterable= depth_num)
-            
+        
         pool.close()
         pool.join()
 
         print('Done', flush=True)
 
+        #calculate average for each depth
         depth_accuracy_avg = depth
         for i in range(len(depth)):
             sum = 0
@@ -409,6 +409,7 @@ class Depth_Hyperparameter_Tuning():
             avg = sum / len(depth[i])
             depth_accuracy_avg[i] = avg
 
+        #find depth with highest accuracy
         best_accuracy = 0
         best_index = 0
         for i in range(len(depth_accuracy_avg)):
@@ -418,6 +419,7 @@ class Depth_Hyperparameter_Tuning():
 
         print("best depth:", depth_num[best_index],", accuracy:", best_accuracy)
 
+     
         #create plot and save to directory
         fig, ax = plt.subplots()
         ax.plot(depth_num, depth_accuracy_avg, label="Global Accuracy")
@@ -428,6 +430,8 @@ class Depth_Hyperparameter_Tuning():
         ax.grid(True)
    
         plt.savefig("./figures/Depth_HyperParameter_Tuning_" + self.DataName + "_.png", dpi=300)
+
+        return depth_num[best_index]
   
 
 
