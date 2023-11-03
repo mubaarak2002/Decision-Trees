@@ -313,7 +313,7 @@ class Tree:
         ax.add_artist(ab)
         annotations.append(ab)
         plt.draw()
-      
+      fig.canvas.mpl_connect("button_press_event", display_text)
     #Show all labels (only needed for report)
     if(0):      
       
