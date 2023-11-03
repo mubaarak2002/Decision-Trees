@@ -14,10 +14,10 @@ Omar Ben-Gacem (ob420) <br />
  ### Operating Modes
  | operating_mode  | Function  |
  | --------------- |---------- |
- |  show_tree      |  generates an interactive MatPlotLib figure to view the tree. Note that all nodes will appear as circles, and upon clicking on the node, a popup will appear and give information on the node  |
- |  metrics        |  Update the tables of the Confusion Matrix and the Performance Metrics and place them in the figures file |
- | depth_benchmark | Update the figures regarding the performance of the decision tree for various depths. Note in this instance the depth field is ignored, and instead plots all data from 4 to 70. **NOTE**: This computation takes a long time to run, see *Reccomended Depth Parameters* For the output of this test when run in advance |
- | normal          | Plot the normal distribution of the accuracy for all three Classification Methods over 10 Folds  |
+ |  "show_tree"      |  generates an interactive MatPlotLib figure to view the tree. Note that all nodes will appear as circles, and upon clicking on the node, a popup will appear and give information on the node  |
+ |  "metrics"        |  Update the tables of the Confusion Matrix and the Performance Metrics and place them in the figures file. This may take a  minutes to run. |
+ | "depth_benchmark" | Update the figures regarding the performance of the decision tree for various depths. Note in this instance the depth field is ignored, and instead plots all data from 4 to 70. **NOTE**: This computation takes a long time to run, see *Reccomended Depth Parameters* For the output of this test when run in advance |
+ | "normal"          | Plot the normal distribution of the accuracy for all three Classification Methods over 10 Folds  |
 
 
 ## Reccomended Depth Parameters
