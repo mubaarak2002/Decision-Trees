@@ -6,23 +6,33 @@ import numpy as np
 import sys
 
 def main():
-  if len(sys.argv) == 3:
+  if len(sys.argv) == 4:
     dataset_path = sys.argv[1]
     depth = sys.argv[2]
+    mode = sys.argv[3]
   else:
-    print("arguements taken: <dataset path> <depth>")
+    print("arguements taken: <dataset path> <depth> <operating_mode>")
     quit()
+
   print("Loading dataset:", dataset_path)
-  print("Tree depth:", depth)
-  
   dataset = np.loadtxt(dataset_path)
+  print("Tree depth:", depth)
+
+  if mode == "show_tree":
+     print("Showing the Tree for the {} dataset".format(dataset_path))
+     tree_model = Decision_Tree_Classifier.Tree(dataset, max_depth = depth)
+     tree_model.show()
+
+  if mode == "metrics":
+     print("Updating Metrics in the figures folder")
+     benchmark = TB.Model_Comparison_TB(dataset, 10, depth, Decision_Tree_Classifier.Tree, Other_Classifiers.RandomClassifier, Other_Classifiers.NNClassifier)
+     benchmark.all_metrics()
+
+
   
-  #test = Decision_Tree_Classifier.Tree(dataset, max_depth = depth)
-  #print(test.evaluate([[-68,	-58,	-65,	-65,	-76,	-87,	-82,	1]]))
-  #test.show()
   
-  benchmark = TB.Model_Comparison_TB(dataset, 10, depth, Decision_Tree_Classifier.Tree, Other_Classifiers.RandomClassifier, Other_Classifiers.NNClassifier)
-  benchmark.all_metrics()
+
+
   
   #benchmark.precision()
   #benchmark.plotNorm()
