@@ -415,7 +415,8 @@ class Node:
 
 
   def clean(self):
-    '''pseudo-pruning, removes all nodes that do not '''
+    '''pseudo-pruning, removes all nodes that do not lead to any different value. this happens when
+       there are multiple labels left over, but the tree reaches a maximum depth'''
     if(self.left.room is None):
       self.left.clean()
     if(self.right.room is None):
@@ -426,6 +427,7 @@ class Node:
       self.right = None
 
   def print(self):
+    '''The state of the node, and what should be printed on the tree'''
     if self.room is not None:
       return "Room {}".format(self.room)
     else:
@@ -446,6 +448,7 @@ class Node:
 
 
 def extract_categories(dataset):
+  '''Get all catigories from a dataset'''
   height, width = np.shape(dataset)
   no_of_attrtibutes = width - 1
   categories = dataset[:height, -1:].astype(int)

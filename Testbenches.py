@@ -59,14 +59,16 @@ class Model_Comparison_TB():
 
 
     def plotNorm(self):
-        
+        '''plot the normal distribution of the three classifiers to compare results'''
         plt.figure(figsize=(8, 6))
+        # iterate through all the different methods, and their results
         for method, results in self.means.items():
             
+            #mean of results (list of 1 for success or 0 for failiure)
             mean = np.mean(results)
             std = np.std(results)
 
-            
+            # plot all normal distributions between +/- 4 standard deviations
             x = np.linspace(mean - 4 * std,  mean + 4 * std, 100)
             
             # Calculate the PDF values for the normal distribution
@@ -84,17 +86,19 @@ class Model_Comparison_TB():
     def confusion_matrix(self, train_given=None, test_given=None, num_folds=10):
         
         
-        #TODO: this did not need to use indexes, probably replace later?
+        # Generate the confusion matrix for a 10 folded test
         newOrder =list(range(len(self.dataset)))
         random.shuffle(newOrder)
         confusion = {}
         
+        #iterate through all the folds
         for iteration_num in range(num_folds):
             test_start = iteration_num * math.floor( (len(self.dataset) / num_folds) )
             test_finish = (iteration_num + 1) * math.floor( (len(self.dataset) / num_folds) )
             test_set = []
             train_set = []
             
+            #Split into test and train by randomised indexes
             for i in range(test_start, test_finish):
                 test_set.append( self.dataset[ newOrder[i] ] )
                 
@@ -111,10 +115,11 @@ class Model_Comparison_TB():
         
         
         
-    
+            #for every model, run a test and log the results
             for model in self.models:
                 
                 if model == Decision_Tree_Classifier.Tree:
+                    #tree classifier has an extra parameter
                     specific_model = model(self.dataset, self.tree_depth, train_given = np.array(train_set), test_given = np.array(test_set))
                 else:
                     specific_model = model(self.dataset, train_given = train_set, test_given = test_set)
@@ -136,6 +141,7 @@ class Model_Comparison_TB():
                             #confusion[name][row_index][col_index] += cell / num_folds
 
         if(1):
+            #divide by the number of folds (normalisation)
             for name, matrix in confusion.items():     
                 confusion[name] = matrix / 10
                 
@@ -181,11 +187,13 @@ class Model_Comparison_TB():
         global_error_sum = {}
         
         for iteration_num in range(num_folds):
+            #iterate through 10 folds to get the global_Error
             test_start = iteration_num * math.floor( (len(self.dataset) / num_folds) )
             test_finish = (iteration_num + 1) * math.floor( (len(self.dataset) / num_folds) )
             test_set = []
             train_set = []
             
+            #split into test and train set
             for i in range(test_start, test_finish):
                 test_set.append( self.dataset[ newOrder[i] ] )
                 
@@ -200,7 +208,7 @@ class Model_Comparison_TB():
                 for i in range(test_finish, len(self.dataset)):
                     train_set.append(  self.dataset[newOrder[i]])
                     
-                    
+            #iterate through models and get the error from that fold
             for model in self.models:
                 if model == Decision_Tree_Classifier.Tree:
                     instance = model(self.dataset, self.tree_depth, train_given = np.array(train_set), test_given = np.array(test_set))
@@ -223,6 +231,7 @@ class Model_Comparison_TB():
                     
                     
         for model_type, error_sum in global_error_sum.items():
+            #divide by number of folds to get error-mean over all folds
             global_error_sum[model_type] = error_sum * (num_folds) ** -1
 
         self.global_error = global_error_sum
@@ -239,6 +248,7 @@ class Model_Comparison_TB():
         plotNum = 0
         for model, matrix in self.confusion.items():
             
+            #Initalise a table for each of the models being tested
             col_labs = ["Predicted Room: {}".format(x) for x in range(1, len(matrix[0]) + 1)] 
             row_labs = ["Actually Room: {}".format(x) for x in range(1, len(matrix[0]) + 1)] 
 
@@ -257,8 +267,7 @@ class Model_Comparison_TB():
             
             plotNum += 1
             
-        plt.savefig('./figures/confusion_matricies.png', dpi=150)
-        
+
         
         fig1, ax1 = plt.subplots(len(self.models), 1, figsize=(12, 4))
         col_labels = ["Precision", "Recall", "F1 Score"]
@@ -273,12 +282,12 @@ class Model_Comparison_TB():
             r, macro_r = recall_f(matrix)
             f, macrof = f1_score_f(matrix)
             
-            
+            #populate table with elements
             table_data = [np.array( [ "{}%".format(round(elem * 100, 2)) for elem in p ] ), 
                           np.array( [ "{}%".format(round(elem * 100, 2)) for elem in r ] ) , 
                           np.array( [ "{}".format(round(elem * 100, 2)) for elem in f ] )]
   
-
+            print("Unshown Values: Macro Precision: {a}, Macro Recall: {b}, Macro F1 Score: {c}".format(a=macrop, b=macro_r, c=macro_f))
             ax1[plotNum].set_axis_off() 
             table = ax1[plotNum].table( 
                 cellText = np.transpose( np.array( table_data ) ),  
@@ -303,6 +312,14 @@ class Model_Comparison_TB():
 
 
 class Depth_Hyperparameter_Tuning():
+
+    '''
+    
+    Iterates through a 10 fold test for each depth between the depth_min and depth_max, then plots a 
+    graph on the performance of the model for different depths. Also printed is the top performing depth
+    (this may not always be the best as it is likely to get high performance due to overfitting)
+    
+    '''
     #clean:
     #best depth: 17 , accuracy: 0.9694999999999998
 
@@ -311,6 +328,7 @@ class Depth_Hyperparameter_Tuning():
     
     def __init__(self, dataset, tree_model, depth_min = 5, depth_max = 70, num_folds=10, name="clean"):
         
+        #assign each parameter to it's corresponding class attribute
         self.DataName = name
         self.dataset = dataset
         self.tree_model = tree_model
@@ -326,9 +344,12 @@ class Depth_Hyperparameter_Tuning():
         depth_avgs = []
         
         for iteration_num in range(self.num_folds):
+            #iterate through all the number of folds
             print("Calculating Fold {a} at Depth {b}".format(a = iteration_num, b=depth_num))
             test_start = iteration_num * math.floor( (len(self.dataset) / self.num_folds) )
             test_finish = (iteration_num + 1) * math.floor( (len(self.dataset) / self.num_folds) )
+
+            # generate the test and train set
             test_set = []
             train_set = []
                 
@@ -345,7 +366,8 @@ class Depth_Hyperparameter_Tuning():
                     train_set.append( self.dataset[self.newOrder[i]] )
                 for i in range(test_finish, len(self.dataset)):
                     train_set.append(  self.dataset[self.newOrder[i]])
-                        
+            
+            #create an instance of the tree, and evaluate it
             instance = self.tree_model(self.dataset, depth_num, train_given=np.array(train_set), test_given=np.array(test_set))
             results = instance.evaluate_internal()
                 
@@ -353,11 +375,13 @@ class Depth_Hyperparameter_Tuning():
             for result in results:
                 if result == 1: sum += 1
                     
+            ##append the tree's performance to the depths and return
             depth_avgs.append(sum / len(results))
         return depth_avgs
 
 
     def run(self):
+        '''This function would take a very very long time to run, so uses multiple threads to make runtime much faster'''
         print("Running hyperparameter tuning on depth paramter")
         manager = mp.Manager()
         depth = manager.dict()
@@ -394,6 +418,7 @@ class Depth_Hyperparameter_Tuning():
 
         print("best depth:", depth_num[best_index],", accuracy:", best_accuracy)
 
+        #create plot and save to directory
         fig, ax = plt.subplots()
         ax.plot(depth_num, depth_accuracy_avg, label="Global Accuracy")
         ax.set_xlabel("Maximum Allowed Tree Depth")
