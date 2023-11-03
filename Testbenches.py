@@ -74,7 +74,7 @@ class Model_Comparison_TB():
             
             plt.plot(x, pdf, label=f"{method}, with Mean={round(mean, 2)}")
             
-        plt.title("Performance Distribution of Multiple Machine Learning Models")
+        plt.title("Performance Distribution of Multiple Machine Learning Models over {} folds".format(self.num_folds))
         plt.xlabel("Accuracy")
         plt.ylabel("Probability Concentration")
         plt.legend()
@@ -135,7 +135,7 @@ class Model_Comparison_TB():
                             confusion[name][row_index][col_index] += cell
                             #confusion[name][row_index][col_index] += cell / num_folds
 
-        if(0):
+        if(1):
             for name, matrix in confusion.items():     
                 confusion[name] = matrix / 10
                 
@@ -260,7 +260,7 @@ class Model_Comparison_TB():
         plt.savefig('./figures/confusion_matricies.png', dpi=150)
         
         
-        fig1, ax1 = plt.subplots(len(self.models), 1)
+        fig1, ax1 = plt.subplots(len(self.models), 1, figsize=(12, 4))
         col_labels = ["Precision", "Recall", "F1 Score"]
         
         plotNum = 0
@@ -289,7 +289,7 @@ class Model_Comparison_TB():
                 cellLoc ='center',  
                 loc ='upper left')    
             
-            ax1[plotNum].set_title("Performance metrics of " + model, fontweight ="bold")      
+            ax1[plotNum].set_title("Performance Metrics of " + model + " with Accuracy: " + str(round(accuracy * 100, 2)) + "%", fontweight ="bold")      
             plotNum += 1
         
 
@@ -309,8 +309,9 @@ class Depth_Hyperparameter_Tuning():
     #noisy:
     #best depth: 52 , accuracy: 0.8574999999999999
     
-    def __init__(self, dataset, tree_model, depth_min = 5, depth_max = 40, num_folds=10):
+    def __init__(self, dataset, tree_model, depth_min = 5, depth_max = 70, num_folds=10, name="clean"):
         
+        self.DataName = name
         self.dataset = dataset
         self.tree_model = tree_model
         self.depth_min = depth_min
@@ -320,39 +321,6 @@ class Depth_Hyperparameter_Tuning():
         random.shuffle(newOrder)
         self.newOrder = newOrder
         
-    
-    def save(self):
-        
-        x = []
-        y = {}
-        template = {"Accuracy": [], "Average Precision": [], "Average Recall": [], "Average F1 Score": []}
-        for depth, matrix in self.depth.items():
-            x.append(depth)
-            y = template
-            a = accuracy_f(matrix)
-            p, macrop = precision_f(matrix)
-            (recalls, macro_r) = recall_f(matrix)
-            f, macro_f = f1_score_f(matrix)
-
-            y["Accuracy"].append( a )
-            y["Average Precision"].append( sum(p)/len(p) )
-            y["Average Recall"].append( sum(recalls)/len(recalls) )
-            y["Average F1 Score"].append( sum(f)/len(f) )
-            
-            
-        fig, ax = plt.subplots()
-        for label, data in y.items():
-            ax.plot(x, data, label=label)
-            
-        ax.set_xlabel("Maximum Allowed Tree Depth")
-        ax.set_ylabel("Performance Metric Score")
-        ax.set_title("Performance of a Decision Tree Over Multiple Depths")
-        ax.legend()
-        ax.grid(True)
-        plt.show()
-        
-        
-
 
     def depth_test(self, depth_num):
         depth_avgs = []
@@ -426,10 +394,16 @@ class Depth_Hyperparameter_Tuning():
 
         print("best depth:", depth_num[best_index],", accuracy:", best_accuracy)
 
-     
-        plt.plot(depth_num, depth_accuracy_avg)
-        plt.savefig("./figures/Depth_HyperParameter_Tuning.png", dpi=300)
-        
+        fig, ax = plt.subplots()
+        ax.plot(depth_num, depth_accuracy_avg, label="Global Accuracy")
+        ax.set_xlabel("Maximum Allowed Tree Depth")
+        ax.set_ylabel("Average Accuracy over {} folds".format(self.num_folds))
+        ax.set_title("Accuracy of a Decision Tree Over Multiple Possible Depths")
+        ax.legend()
+        ax.grid(True)
+   
+        plt.savefig("./figures/Depth_HyperParameter_Tuning_" + self.DataName + "_.png", dpi=300)
+  
 
 
 

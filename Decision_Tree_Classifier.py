@@ -55,8 +55,9 @@ class Tree:
     self.depth = max_depth
     self.tree_name = "Decision Tree Classifier"
 
-
+    # Create start of tree
     self.head = Node(self.train, 0, split_resolution=split_resolution, split_threshold=0) #unused as tree is not tunable
+    # Remove all unneccesary values
     self.head.clean()
 
   def evaluate(self, test_data):
@@ -226,9 +227,9 @@ class Tree:
       centres.append( dot_centre )
       texts[dot_centre] = tree.print()
       
-      #defaults: width_scalar = 4, tolerance = 1
-      width_scalar = 14
-      tolerance = 10
+      #for showing all labels (need more space): width_scalar = 14, tolerance = 10
+      width_scalar = 4
+      tolerance = 1
       
       new_midpoint = (max + min) / 2
       if tree.room is None:
@@ -286,7 +287,7 @@ class Tree:
                     arrowprops=dict(arrowstyle = "-|>")
                     )
         
-    if(0):      
+    if(1):      
       
       def display_text(event):
         
@@ -313,7 +314,8 @@ class Tree:
         annotations.append(ab)
         plt.draw()
       
-    if(1):      
+    #Show all labels (only needed for report)
+    if(0):      
       
 
             
