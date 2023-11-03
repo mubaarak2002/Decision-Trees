@@ -135,7 +135,7 @@ class Model_Comparison_TB():
                             confusion[name][row_index][col_index] += cell
                             #confusion[name][row_index][col_index] += cell / num_folds
 
-        if(0):
+        if(1):
             for name, matrix in confusion.items():     
                 for rowIndex, row in enumerate(matrix):
                     for colIndex, cell in enumerate(row):
@@ -206,7 +206,10 @@ class Model_Comparison_TB():
                     
                     
             for model in self.models:
-                instance = model(self.dataset, train_given = np.array(train_set), test_given = np.array(test_set))
+                if model == Decision_Tree_Classifier.Tree:
+                    instance = model(self.dataset, self.tree_depth, train_given = np.array(train_set), test_given = np.array(test_set))
+                else:
+                    instance = model(self.dataset, train_given = np.array(train_set), test_given = np.array(test_set))
 
                 success = instance.evaluate_internal()
                 
@@ -236,9 +239,10 @@ class Model_Comparison_TB():
 
         
         fig, ax = plt.subplots(len(self.models), 1, figsize=(12, 4))
-        
+        self.global_Error()
         plotNum = 0
         for model, matrix in self.confusion.items():
+            
             col_labs = ["Predicted Room: {}".format(x) for x in range(1, len(matrix[0]) + 1)] 
             row_labs = ["Actually Room: {}".format(x) for x in range(1, len(matrix[0]) + 1)] 
 
@@ -254,7 +258,6 @@ class Model_Comparison_TB():
                 loc ='upper left')         
             
             ax[plotNum].set_title("Confusion Matrix of {a} over {c} folds with Global Error {b}%".format(a=model, b= round((1 - self.global_error[model]) * 100, 2), c=self.num_folds ), fontweight ="bold") 
-            ax[plotNum].set_title("Confusion Matrix of " + model, fontweight ="bold") 
             
             plotNum += 1
             
@@ -778,7 +781,7 @@ def confusion_matrix(actuals, predictions, class_labels=None):
   if class_labels is None:
       class_labels = np.unique(np.concatenate((actuals, predictions)))
 
-  confusion = np.zeros((len(class_labels), len(class_labels)), dtype=int)
+  confusion = np.zeros((len(class_labels), len(class_labels)), dtype=float)
 
      
 
