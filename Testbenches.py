@@ -287,7 +287,7 @@ class Model_Comparison_TB():
                           np.array( [ "{}%".format(round(elem * 100, 2)) for elem in r ] ) , 
                           np.array( [ "{}".format(round(elem * 100, 2)) for elem in f ] )]
   
-            print("Unshown Values: Macro Precision: {a}, Macro Recall: {b}, Macro F1 Score: {c}".format(a=macrop, b=macro_r, c=macro_f))
+            print("Unshown Values: Macro Precision: {a}, Macro Recall: {b}, Macro F1 Score: {c}".format(a=macrop, b=macro_r, c=macrof))
             ax1[plotNum].set_axis_off() 
             table = ax1[plotNum].table( 
                 cellText = np.transpose( np.array( table_data ) ),  

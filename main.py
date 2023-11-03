@@ -24,13 +24,14 @@ def main():
      tree_model = Decision_Tree_Classifier.Tree(dataset, max_depth = depth)
      tree_model.show()
 
-  if mode == "metrics":
+  elif mode == "metrics":
      print("Tree depth:", depth)
      print("Updating Metrics in the figures folder")
      benchmark = TB.Model_Comparison_TB(dataset, 10, depth, Decision_Tree_Classifier.Tree, Other_Classifiers.RandomClassifier, Other_Classifiers.NNClassifier)
      benchmark.all_metrics()
+     print("All Metric Figures updated in the ./figures directory")
      
-  if mode == "depth_benchmark":
+  elif mode == "depth_benchmark":
     print("Tree depth ignored, running range [4,70]")
     if dataset_path == "WIFI_db/noisy_dataset.txt":
       hyperParam = TB.Depth_Hyperparameter_Tuning(dataset, Decision_Tree_Classifier.Tree, name = "noisy")
@@ -39,10 +40,12 @@ def main():
       
     hyperParam.run()
     
-  if mode == "norm":
+  elif mode == "normal":
+    print("Generating Normal Distribution ...")
     benchmark = TB.Model_Comparison_TB(dataset, 10, depth, Decision_Tree_Classifier.Tree, Other_Classifiers.RandomClassifier, Other_Classifiers.NNClassifier)
     benchmark.plotNorm()
-  
+  else:
+    print("Invalid operating_mode")
 
 
 if __name__ == '__main__':
