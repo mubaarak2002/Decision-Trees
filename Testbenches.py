@@ -120,6 +120,8 @@ class Model_Comparison_TB():
 
                 (labels, actual, guess) = specific_model.confusion_constructor()
                 
+                if model == Decision_Tree_Classifier.Tree: print([actual, guess])
+                
                 
                 name = specific_model.name()
                 if name not in list(confusion.keys()):
@@ -476,7 +478,7 @@ def confusion_matrix(actuals, predictions, class_labels=None):
   if class_labels is None:
       class_labels = np.unique(np.concatenate((actuals, predictions)))
 
-  confusion = np.zeros((len(class_labels), len(class_labels)), dtype=int)
+  confusion = np.zeros((len(class_labels), len(class_labels)), dtype=float)
 
      
 
