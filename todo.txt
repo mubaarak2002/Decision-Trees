@@ -1,4 +1,0 @@
-1) TODO: If the number of labels avaiable in this node is all the same, then the recursion must be ended,and this must turn into a leaf
-2) TODO: Create the Tree Class
-3) TODO: Create the Node Class
-4) TODO: take a data sample and run it through a built tree
