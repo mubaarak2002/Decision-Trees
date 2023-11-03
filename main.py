@@ -20,14 +20,14 @@ dataset = np.loadtxt(dataset_path)
 #print(test.evaluate([[-68,	-58,	-65,	-65,	-76,	-87,	-82,	1]]))
 #test.show()
 
-benchmark = TB.Model_Comparison_TB(dataset, 10, depth, Decision_Tree_Classifier.Tree, Other_Classifiers.RandomClassifier, Other_Classifiers.NNClassifier)
-benchmark.all_metrics()
+#benchmark = TB.Model_Comparison_TB(dataset, 10, depth, Decision_Tree_Classifier.Tree, Other_Classifiers.RandomClassifier, Other_Classifiers.NNClassifier)
+#benchmark.all_metrics()
 
 #benchmark.precision()
 #benchmark.plotNorm()
 
-#hyperParam = TB.Depth_Hyperparameter_Tuning(dataset, Decision_Tree_Classifier.Tree)
-#hyperParam.plot_performance()
+hyperParam = TB.Depth_Hyperparameter_Tuning(dataset, Decision_Tree_Classifier.Tree)
+hyperParam.show()
 
 #test = RandomClassifier.NNClassifier(dataset)
 #print((test.confusion_constructor()[2]))
