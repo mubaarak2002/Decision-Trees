@@ -6,16 +6,9 @@ from matplotlib.offsetbox import AnnotationBbox, OffsetImage
 from matplotlib.offsetbox import OffsetBox, AnnotationBbox, TextArea
 from matplotlib.text import OffsetFrom
 
-# tuning parameters
 
-depth = 50
-mode = "build"
-figure_root = "./figures/"
 
-#needs to be declared in global scope
-annotations = []
-
-class Tree:
+class Tunable_Tree:
   '''
   Construtor:
     input: takes in the entire data set of WIFI points
@@ -53,7 +46,7 @@ class Tree:
     self.tree_name = "Decision Tree Classifier"
 
 
-    self.head = Node(self.train, 0, split_resolution=split_resolution, split_threshold=0) #unused as tree is not tunable
+    self.head = Tunable_Node(self.train, 0, split_resolution=split_resolution, split_threshold=split_threshold)
     self.head.clean()
 
   def evaluate(self, test_data):
@@ -95,7 +88,6 @@ class Tree:
       if results[i] == self.test[i][-1]:
         sum += 1
 
-    if mode == "debug": print("The accuracy for this test was {}".format(sum / len(results)))
     print("The accuracy for this test was {}".format(sum / len(results)))
 
   def show(self):
@@ -150,14 +142,12 @@ class Tree:
 
     #need to start on 1, not 0, so add one
     max_tree_depth += 1
-    if mode == "debug": print("Tree found with max depth {a}, spanning {b} left entries and {c} right entries".format(a=max_tree_depth, b=left_counter, c=right_counter))
-
+   
     total_span = left_counter + right_counter
 
     horisontal_bins = total_span
     vertical_bins = max_tree_depth
-    if mode == "debug": print("\nNeeds {a} vertical bins and {b} horisontal bins\n".format(a=vertical_bins, b=horisontal_bins))
-
+  
     if(1): #used to fold this down for ease of coding
       #Frame initialisation
       fig = plt.figure(figsize= (w, h) )
@@ -279,7 +269,7 @@ class Tree:
                     arrowprops=dict(arrowstyle = "-|>")
                     )
         
-    if(0):      
+    if(1):      
       
       def display_text(event):
         
@@ -305,24 +295,14 @@ class Tree:
         ax.add_artist(ab)
         annotations.append(ab)
         plt.draw()
-      
-    if(1):      
-      
 
-            
-      for (t_x, t_y), nodeText in texts.items():
-        offsetbox = TextArea(nodeText)
-        ab = AnnotationBbox(offsetbox, (t_x, t_y), xycoords='data', boxcoords="offset points",)
-        ax.add_artist(ab)
-        annotations.append(ab)
-        plt.draw()
-
-
-
-    fig.savefig(figure_root + "current_tree.png", dpi=300)
+      fig.canvas.mpl_connect("button_press_event", display_text)
+    fig.savefig("./figures" + "current_tree.png", dpi=300)
     plt.show()
 
-class Node:
+
+
+class Tunable_Node:
   '''
   Constructror:
     input: the current data set that is still undetermined after all prior branches, atributes, and other stuff
@@ -355,50 +335,81 @@ class Node:
   """Node constructor"""
   def __init__(self, dataset, TreeDepth=0,  split_resolution=20, split_threshold=0):
 
+    #print("\n\n\n\----------------------------------------------------------------")
+    #print(TreeDepth)
+    
     
     self.depth = TreeDepth
     x_values, categories = extract_categories(dataset)
     [labels, counts] = np.unique(categories, return_counts=True)
     
+    if len(labels) == 0:
+      print("length of zero")
+      print(dataset)
+    #print(labels)
+    #print("There are {} labels".format(len(labels)))
     if(len(labels) == 1):
+
       self.room = labels[0]
       self.left = None
       self.right = None
       return
     elif(TreeDepth == int(depth)):
+      print([len(dataset), labels, counts])
       majority = labels[np.argmax(counts)] # fails here
       self.room = majority
       self.left = None
       self.right = None
       return
     else:
-      self.room = None
-      dataset_a, dataset_b, split, feature = find_split(dataset, split_resolution, split_threshold=0) #unused as tree is not being tuned
-      self.left = Node(dataset_a, TreeDepth + 1, split_threshold=split_threshold)
-      self.right = Node(dataset_b, TreeDepth + 1, split_threshold=split_threshold)
+
+      
+      if split_threshold == 0:
+        self.room = None
+        dataset_a, dataset_b, split, feature = find_split(dataset, split_resolution, split_threshold=split_threshold)
+        if dataset_a == [] or dataset_b == []:
+          print(">:(")
+        self.left = Tunable_Node(dataset_a, TreeDepth + 1, split_threshold=split_threshold)
+        self.right = Tunable_Node(dataset_b, TreeDepth + 1, split_threshold=split_threshold)
+      
+      else:
+        dataset_a, dataset_b, split, feature = find_split(dataset, split_resolution, split_threshold=split_threshold)
+       
+        if dataset_a is None:
+          
+          majority = labels[np.argmax(counts)]
+          self.room = majority
+          self.left = None
+          self.right = None
+        else:
+          self.room = None
+          self.left = Tunable_Node(dataset_a, TreeDepth + 1, split_threshold=split_threshold)
+          self.right = Tunable_Node(dataset_b, TreeDepth + 1, split_threshold=split_threshold)
+        
       
       #feature is the room number
       self.feature = feature
       #split is the value its split on
       self.split = split
 
-
-
   def clean(self):
-    if(self.left.room is None):
-      self.left.clean()
-    if(self.right.room is None):
-      self.right.clean()
-    if((self.left.room is not None) and self.left.room == self.right.room):
-      self.room = self.left.room
-      self.left = None
-      self.right = None
+    #print("cleaning")
+    #if(self.left is not None and self.right is not None):
+    if(1):
+      if(self.left.room is None):
+        self.left.clean()
+      if(self.right.room is None):
+        self.right.clean()
+      if((self.left.room is not None) and self.left.room == self.right.room):
+        self.room = self.left.room
+        self.left = None
+        self.right = None
 
   def print(self):
     if self.room is not None:
-      return "Room {}".format(self.room)
+      return "We are in room {}".format(self.room)
     else:
-      return "Feature {a} < {b}".format(a=self.feature, b=round(self.split, 2))
+      return "Split on Feature {a} less than {b}".format(a=self.feature, b=round(self.split, 2))
 
   def evaluate(self, data):
     '''takes a single data entry, and then evaluates it based on the node's current splitting criteria'''
@@ -409,11 +420,12 @@ class Node:
       return self.left.evaluate(data)
     else:
       return self.right.evaluate(data)
-
-
-
-
-
+  
+  
+  
+  
+  
+  
 def extract_categories(dataset):
   height, width = np.shape(dataset)
   no_of_attrtibutes = width - 1
@@ -484,14 +496,13 @@ def find_split(dataset, split_resolution=20, split_threshold=0):
 
   """
   #print("ode Inputted Threshold, ", split_threshold)
-  if mode == "debug": print(dataset)
   height, width = np.shape(dataset)
   categories = dataset[:height, -1:].astype(int).flatten()
   all_splits = []
   # finding best split for each feature
   for i in range(width - 1):
     column = dataset[:, i]
-    toAdd = best_split_in_feature(column, categories, split_resolution, split_threshold=0) #Set to zero as this is a non-tunable tree
+    toAdd = best_split_in_feature(column, categories, split_resolution, split_threshold=split_threshold)
     #print(toAdd)
     if toAdd is not None:
       all_splits.append(toAdd)
@@ -499,6 +510,9 @@ def find_split(dataset, split_resolution=20, split_threshold=0):
   # finds feature with highest information gain
   best_split = [1000]
 
+  
+  if split_threshold != 0 and len(all_splits) == 0:
+    return None, None, None, None
     
   for i in range(len(all_splits)):
   # information gain is entropy_before - entropy_after
@@ -549,16 +563,27 @@ def best_split_in_feature(column, categories, resolution, split_threshold=0):
     above = np.array(occurences_above)
     below = np.array(occurences_below)
     #print("Above: {a}, Below: {b}".format(a=sum(above), b=sum(below)))
+    if split_threshold == 0:
+      entropy = calc_entropy(above) + calc_entropy(below)
+      entropy_list.append(entropy)
+      split_point_list.append(split_point)
+    
+    else:
+      
+      if sum(below) > height * split_threshold and sum(above) > height * split_threshold:
 
-    entropy = calc_entropy(above) + calc_entropy(below)
-    entropy_list.append(entropy)
-    split_point_list.append(split_point)
-  
+        entropy = calc_entropy(above) + calc_entropy(below)
+        entropy_list.append(entropy)
+        split_point_list.append(split_point)
+
+    
     split_point += step_size
 
   # finds split with highest information gain
   lowest = [1000, 0]
 
+  if split_threshold != 0 and len(entropy_list) == 0:
+    return None
 
   for i in range(len(entropy_list)):
 

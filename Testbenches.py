@@ -123,8 +123,8 @@ class Model_Comparison_TB():
                 
                 name = specific_model.name()
                 if name not in list(confusion.keys()):
-                    confusion[name] = (confusion_matrix(actual, guess, class_labels=labels))    
-                
+                    confusion[name] = (confusion_matrix(actual, guess, class_labels=labels))
+                    
                 else:
                     toAdd = (confusion_matrix(actual, guess, class_labels=labels))
                     for row_index, row in enumerate(toAdd):
@@ -132,8 +132,16 @@ class Model_Comparison_TB():
                         for col_index, cell in enumerate(row):
                             
                             confusion[name][row_index][col_index] += cell
+                            #confusion[name][row_index][col_index] += cell / num_folds
 
-        
+        if(0):
+            for name, matrix in confusion.items():     
+                for rowIndex, row in enumerate(matrix):
+                    for colIndex, cell in enumerate(row):
+                            
+                        confusion[name][rowIndex][colIndex] = cell / num_folds
+                
+                
         self.confusion = confusion
         #print(self.confusion)
         return self.confusion
@@ -289,11 +297,72 @@ class Model_Comparison_TB():
         # plt.show() 
 
 
+
+
+
+
+class Depth_Hyperparameter_Tuning():
+    
+    def __init__(self, dataset, tree_model, depth_min = 4, depth_max = 20, num_folds=10):
+        
+        self.dataset = dataset
+        newOrder =list(range(len(self.dataset)))
+        random.shuffle(newOrder)
+        depth = {}
+        
+        
+        for depth_test in range(depth_min, depth_max + 1):
+            depth[depth_test] = []
+        
+            for iteration_num in range(num_folds):
+                print("Calculating Fold {a} at Depth {b}".format(a = iteration_num, b=depth_test))
+                test_start = iteration_num * math.floor( (len(self.dataset) / num_folds) )
+                test_finish = (iteration_num + 1) * math.floor( (len(self.dataset) / num_folds) )
+                test_set = []
+                train_set = []
+                
+                for i in range(test_start, test_finish):
+                    test_set.append( self.dataset[ newOrder[i] ] )
+                    
+                if test_start == 0:
+                    
+                    for i in range(test_finish, len(self.dataset)):
+                        train_set.append( self.dataset[ newOrder[i] ] )
+                
+                else:
+                    for i in range(0, test_start):
+                        train_set.append( self.dataset[newOrder[i]] )
+                    for i in range(test_finish, len(self.dataset)):
+                        train_set.append(  self.dataset[newOrder[i]])
+                        
+                instance = tree_model(dataset, i, train_given=np.array(train_set), test_given=np.array(test_set))
+                results = instance.evaluate_internal()
+                
+                sum = 0
+                for result in results:
+                    if result == 1: sum += 1
+                    
+                depth[depth_test].append(sum / len(results))
+
+        self.depth = depth
+        print(depth)
+        return depth
+
+
+                       
+            
+    
+    
+    
+    
+
+
+
 # THIS IS NOT QUITE WORKING YET, SO WILL FIX LATER
 class Split_Hyperparameter_Tuning():
     '''Tune the Split Parameter'''
 
-    def __init__(self, dataset, tree_model, num_tests=10, num_folds=4):
+    def __init__(self, dataset, tree_model, num_tests=20, num_folds=10):
         
         self.dataset = dataset
         self.trials = {}
@@ -304,12 +373,12 @@ class Split_Hyperparameter_Tuning():
         newOrder =list(range(len(self.dataset)))
         random.shuffle(newOrder)
         
-        self.max = 0.2
-        self.min = 0
+        self.max = 0.6
+        self.min = 0.0
         for test_number in range(num_tests):
             split_threshold = (test_number * 1/num_tests) * self.max + self.min
             print("Testing Threshold: ", split_threshold)
-            
+            print("\n")
             global_error_sum = 0
             for fold_iteration_num in range(num_folds):
                 print("Fold: ", fold_iteration_num)
@@ -332,7 +401,7 @@ class Split_Hyperparameter_Tuning():
                     for i in range(test_finish, len(self.dataset)):
                         train_set.append(  self.dataset[newOrder[i]])
 
-                instance = tree_model(self.dataset, train_given = np.array(train_set), test_given = np.array(test_set), split_threshold=split_threshold)
+                instance = tree_model(self.dataset, 15, train_given = np.array(train_set), test_given = np.array(test_set), split_threshold=split_threshold)
                 success = instance.evaluate_internal()
                 
                 counter = 0
@@ -351,24 +420,38 @@ class Split_Hyperparameter_Tuning():
     def plot_performance(self):
         '''Plot Global Accuracy for different split thresholds, assuming global accuracy = 1 - global error'''
         
+        
+        test_data_1 = {
+                0.0                : 0.9664999999999999, 
+                0.024              : 0.9664999999999999, 
+                0.048              : 0.9664999999999999, 
+                0.072              : 0.9664999999999999, 
+                0.096              : 0.9664999999999999, 
+                0.12               : 0.9664999999999999, 
+                0.144              : 0.9664999999999999, 
+                0.16799999999999998: 0.9664999999999999, 
+                0.192              : 0.9664999999999999, 
+                0.216              : 0.9664999999999999, 
+                0.24               : 0.9664999999999999, 
+                0.264              : 0.9664999999999999, 
+                0.288              : 0.9664999999999999, 
+                0.312              : 0.9664999999999999, 
+                0.33599999999999997: 0.9664999999999999, 
+                0.36               : 0.9664999999999999, 
+                0.384              : 0.9664999999999999, 
+                0.408              : 0.9664999999999999, 
+                0.432              : 0.9664999999999999, 
+                0.45599999999999996: 0.9664999999999999}
+        
+        
         # This test is quite computationally expencive, so this is the results pre-stored to make runniung the test less long
-        data = {0.0:                  0.964, 
-                0.020000000000000004: 0.9664999999999999, 
-                0.04000000000000001:  0.9664999999999999, 
-                0.06:                 0.9664999999999999, 
-                0.08000000000000002:  0.9664999999999999, 
-                0.1:                  0.9664999999999999, 
-                0.12:                 0.9664999999999999, 
-                0.13999999999999999:  0.9664999999999999,
-                0.16000000000000003:  0.9664999999999999, 
-                0.18000000000000002:  0.9664999999999999
-                }
+        data = self.trials
         
         split_threshold = list(data.keys())
         split_accuracy = list(data.values())
         
         plt.plot(split_threshold, split_accuracy )
-        
+        plt.savefig("./figures/HyperParameter_Tuning.png", dpi=300)
 
 
 

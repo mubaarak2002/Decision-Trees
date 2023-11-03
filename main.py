@@ -1,5 +1,6 @@
 import Decision_Tree_Classifier
 import Other_Classifiers
+import Tunable_Classes
 import Testbenches as TB
 import numpy as np
 import sys
@@ -15,15 +16,18 @@ print("Tree depth:", depth)
 
 dataset = np.loadtxt(dataset_path)
 
-#test = Decision_Tree_Classifier.Tree(dataset, max_depth = depth)
+test = Decision_Tree_Classifier.Tree(dataset, max_depth = depth)
 #print(test.evaluate([[-68,	-58,	-65,	-65,	-76,	-87,	-82,	1]]))
-#test.show()
+test.show()
 
-benchmark = TB.Model_Comparison_TB(dataset, 10, depth, Decision_Tree_Classifier.Tree, Other_Classifiers.RandomClassifier, Other_Classifiers.NNClassifier)
-benchmark.all_metrics()
+#benchmark = TB.Model_Comparison_TB(dataset, 10, depth, Decision_Tree_Classifier.Tree, Other_Classifiers.RandomClassifier, Other_Classifiers.NNClassifier)
+#benchmark.all_metrics()
 
 #benchmark.precision()
 #benchmark.plotNorm()
+
+#hyperParam = TB.Depth_Hyperparameter_Tuning(dataset, Decision_Tree_Classifier.Tree)
+#hyperParam.plot_performance()
 
 #test = RandomClassifier.NNClassifier(dataset)
 #print((test.confusion_constructor()[2]))
