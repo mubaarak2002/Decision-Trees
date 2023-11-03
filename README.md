@@ -20,7 +20,7 @@ Omar Ben-Gacem (ob420) <br />
  | "normal"          | Plot the normal distribution of the accuracy for all three Classification Methods over 10 Folds  |
 
  ### Hyperparameter Tuning - Depth
- Instead of providing a speific `<depth>` integer argument to build the tree with, inputing `tune` as the argument will run hyperparameter tuning on the dataset first to find the optimal depth and will proceed to use that value.
+ Instead of providing a speific `<depth>` integer argument to build the tree with, inputing `tune` as the argument will run hyperparameter tuning on the dataset first to find the optimal depth and will proceed to use that value. NOTE: This is a very resource intensive task.
 
 
 ## Reccomended Depth Parameters
