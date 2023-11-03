@@ -26,8 +26,12 @@ benchmark.all_metrics()
 #benchmark.precision()
 #benchmark.plotNorm()
 
-#hyperParam = TB.Depth_Hyperparameter_Tuning(dataset, Decision_Tree_Classifier.Tree)
-#hyperParam.plot_performance()
-
 #test = RandomClassifier.NNClassifier(dataset)
 #print((test.confusion_constructor()[2]))
+
+#hyperParam = TB.Depth_Hyperparameter_Tuning(dataset, Decision_Tree_Classifier.Tree)
+#hyperParam.run()
+
+if __name__ == '__main__':
+    main()
+
