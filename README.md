@@ -19,9 +19,12 @@ Omar Ben-Gacem (ob420) <br />
  | "depth_benchmark" | Update the figures regarding the performance of the decision tree for various depths. Note in this instance the depth field is ignored, and instead plots all data from 4 to 70. **NOTE**: This computation takes a long time to run, see *Reccomended Depth Parameters* For the output of this test when run in advance |
  | "normal"          | Plot the normal distribution of the accuracy for all three Classification Methods over 10 Folds  |
 
+ ### Hyperparameter Tuning - Depth
+ Instead of providing a speific `<depth>` integer argument to build the tree with, inputing `tune` as the argument will run hyperparameter tuning on the dataset first to find the optimal depth and will proceed to use that value.
+
 
 ## Reccomended Depth Parameters
-Multiple Trials were run (plotted below) to find the optimal depth parameter for both the clean and noisy datasets. The Plots are shown below
+Hyperparameter Tuning runs multiple trials (plotted below) to find the optimal depth parameter for both the clean and noisy datasets. The Plots are shown below
 
 Clean Dataset Depth Optimisation |  Noisy Dataset Depth Optimisation
 :-------------------------:|:-------------------------:
@@ -29,5 +32,5 @@ Clean Dataset Depth Optimisation |  Noisy Dataset Depth Optimisation
 *Note the differing scales in the figures*
 
 
-Both Plots Plateau for a certain depth. To prevent overfitting, it is reccomended you run the trees at their optimal depth. **when running the clean dataset, it is reccommended you use a depth of 20, and for the noisy dataset, it is reccomended you use a depth of 45**. This will give the best performance of the model on each dataset. You can run the clean dataset at a depth of 24, however ths will yeild no additional performance.
+Both Plots Plateau for a certain depth. **When running the clean dataset, it is reccommended to use a depth of 20, and for the noisy dataset, it is reccomended to use a depth of 50**. This will give the best performance of the model on each dataset.
 
