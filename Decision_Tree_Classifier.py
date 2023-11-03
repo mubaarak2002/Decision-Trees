@@ -212,7 +212,7 @@ class Tree:
 
 
     #the root node
-    root_centre = ( (midpoint) , ( h *  ( ( vertical_bins - height_index ) / vertical_bins ) - radii - top_offset ) )
+    root_centre = ( (midpoint) , ( h *  ( ( vertical_bins - height_index ) / vertical_bins ) - radii - top_offset * 2 ) )
     centres.append( root_centre )
     texts[root_centre] = root.print()
 
@@ -225,26 +225,30 @@ class Tree:
       dot_centre = ( (max + min) / 2 , ( h *  ( ( vertical_bins - bin_depth ) / vertical_bins ) + radii + top_offset  ) )
       centres.append( dot_centre )
       texts[dot_centre] = tree.print()
+      
+      #defaults: width_scalar = 4, tolerance = 1
+      width_scalar = 14
+      tolerance = 10
+      
       new_midpoint = (max + min) / 2
       if tree.room is None:
         
-      
         #There tree has enough space to grow
-        if new_midpoint - min > radii and max - new_midpoint > radii ** 0.5:
+        if new_midpoint - min > radii * tolerance and max - new_midpoint > (radii * tolerance) ** 0.5:
           L = plotTree(tree.left, min, new_midpoint, bin_depth + 1)
           R = plotTree(tree.right, new_midpoint, max, bin_depth + 1)
           
         #The Tree does not have space to grow, so some ammendments need to be made
         else:
           #The new nodes will intersect with each other 
-          if new_midpoint - 4 * radii > 0:
-            L = plotTree(tree.left, new_midpoint - 4 * radii, new_midpoint, bin_depth + 1)
-            R = plotTree(tree.right, new_midpoint, new_midpoint + 4 * radii, bin_depth + 1)
+          if new_midpoint - width_scalar * radii * tolerance > 0:
+            L = plotTree(tree.left, new_midpoint - width_scalar * radii, new_midpoint, bin_depth + 1)
+            R = plotTree(tree.right, new_midpoint, new_midpoint + width_scalar * radii, bin_depth + 1)
 
           #The Tree is growing into the left hand side of the wall
           else:
-            L = plotTree(tree.left, radii, new_midpoint + 4 * radii, bin_depth + 1)
-            R = plotTree(tree.right, new_midpoint + 4 * radii, new_midpoint + 8 * radii, bin_depth + 1)
+            L = plotTree(tree.left, radii, new_midpoint + width_scalar * radii, bin_depth + 1)
+            R = plotTree(tree.right, new_midpoint + width_scalar * radii, new_midpoint + 2 * width_scalar * radii, bin_depth + 1)
 
 
 
