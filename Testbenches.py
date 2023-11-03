@@ -303,14 +303,14 @@ class Model_Comparison_TB():
 
 
 class Depth_Hyperparameter_Tuning():
-    
-    def __init__(self, dataset, tree_model, depth_min = 4, depth_max = 55, num_folds=10, mode="preLoaded-noisy"):
-        
-        # This test takes a very long time to run, so there is some pre-determined data here
+    #clean:
+    #best depth: 17 , accuracy: 0.9694999999999998
 
+    #noisy:
+    #best depth: 52 , accuracy: 0.8574999999999999
+    
+    def __init__(self, dataset, tree_model, depth_min = 5, depth_max = 40, num_folds=10):
         
-        #self.clean_data = preRun_clean_data
-        #self.noisy_data = preRun_noisy_data
         self.dataset = dataset
         depth = {}
         
@@ -363,7 +363,43 @@ class Depth_Hyperparameter_Tuning():
         
 
 
+    def depth_test(self, depth_num):
+        depth_avgs = []
+        
+        for iteration_num in range(self.num_folds):
+            print("Calculating Fold {a} at Depth {b}".format(a = iteration_num, b=depth_num))
+            test_start = iteration_num * math.floor( (len(self.dataset) / self.num_folds) )
+            test_finish = (iteration_num + 1) * math.floor( (len(self.dataset) / self.num_folds) )
+            test_set = []
+            train_set = []
+                
+            for i in range(test_start, test_finish):
+                test_set.append( self.dataset[ self.newOrder[i] ] )
+                    
+            if test_start == 0:
+                    
+                for i in range(test_finish, len(self.dataset)):
+                    train_set.append( self.dataset[ self.newOrder[i] ] )
+                
+            else:
+                for i in range(0, test_start):
+                    train_set.append( self.dataset[self.newOrder[i]] )
+                for i in range(test_finish, len(self.dataset)):
+                    train_set.append(  self.dataset[self.newOrder[i]])
+                        
+            instance = self.tree_model(self.dataset, depth_num, train_given=np.array(train_set), test_given=np.array(test_set))
+            results = instance.evaluate_internal()
+                
+            sum = 0
+            for result in results:
+                if result == 1: sum += 1
+                    
+            depth_avgs.append(sum / len(results))
+        return depth_avgs
+
+
     def run(self):
+        print("Running hyperparameter tuning on depth paramter")
         manager = mp.Manager()
         depth = manager.dict()
         depth_num = []
@@ -371,6 +407,7 @@ class Depth_Hyperparameter_Tuning():
         print("Starting multiprocessing on", n_threads, "threads")
         if n_threads == None: n_threads = 8
         pool = mp.Pool(n_threads)
+        
         for i in range(self.depth_min, self.depth_max + 1):
             depth_num.append(i)
 
@@ -380,7 +417,27 @@ class Depth_Hyperparameter_Tuning():
         pool.join()
 
         print('Done', flush=True)
-        print(list(zip(depth_num, depth)))
+
+        depth_accuracy_avg = depth
+        for i in range(len(depth)):
+            sum = 0
+            for data_point in depth[i]:
+                sum += data_point
+            avg = sum / len(depth[i])
+            depth_accuracy_avg[i] = avg
+
+        best_accuracy = 0
+        best_index = 0
+        for i in range(len(depth_accuracy_avg)):
+            if depth_accuracy_avg[i] > best_accuracy:
+                best_accuracy = depth_accuracy_avg[i]
+                best_index = i
+
+        print("best depth:", depth_num[best_index],", accuracy:", best_accuracy)
+
+     
+        plt.plot(depth_num, depth_accuracy_avg)
+        plt.savefig("./figures/Depth_HyperParameter_Tuning.png", dpi=300)
         
 
 
