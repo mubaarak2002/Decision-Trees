@@ -30,7 +30,7 @@ def main():
      
   if mode == "depth_benchmark":
     hyperParam = TB.Depth_Hyperparameter_Tuning(dataset, Decision_Tree_Classifier.Tree)
-    hyperParam.show()
+    hyperParam.run()
 
 
   
