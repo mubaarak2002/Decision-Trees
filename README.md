@@ -16,6 +16,7 @@ Omar Ben-Gacem (ob420) <br />
  | ---------------|---------- |
  |  show_tree  |  generates an interactive MatPlotLib figure to view the tree. Note that all nodes will appear as circles, and upon clicking on the node, a popup will appear and give information on the node  |
  |  metrics  |  Update the tables of the Confusion Matrix and the Performance Metrics and place them in the figures file |
+ | depth_benchmark | Update the figures regarding the performance of the decision tree for various depths |
 
 
 ## Reccomended Depth Parameters
