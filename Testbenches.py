@@ -312,22 +312,13 @@ class Depth_Hyperparameter_Tuning():
     def __init__(self, dataset, tree_model, depth_min = 5, depth_max = 40, num_folds=10):
         
         self.dataset = dataset
-        depth = {}
-        
-        if mode == "preLoaded-noisy":
-            depth = self.noisy_data
-        elif mode == "preLoaded-clean":
-            depth = self.clean_data
-            
-        else:
-            print("Running Test")
-            for depth_test in range(depth_min, depth_max + 1):
-                print("Running Test for Depth: ", depth_test)
-                test_instance = Model_Comparison_TB(dataset, num_folds, depth_test, tree_model)
-                
-                depth[depth_test] = test_instance.confusion_matrix()["Decision Tree Classifier"]
-
-        self.depth = depth
+        self.tree_model = tree_model
+        self.depth_min = depth_min
+        self.depth_max = depth_max
+        self.num_folds = num_folds
+        newOrder =list(range(len(self.dataset)))
+        random.shuffle(newOrder)
+        self.newOrder = newOrder
         
     
     def save(self):
