@@ -6,8 +6,7 @@ from matplotlib.offsetbox import AnnotationBbox, OffsetImage
 from matplotlib.offsetbox import OffsetBox, AnnotationBbox, TextArea
 from matplotlib.text import OffsetFrom
 
-# tuning parameters
-
+# all global variables
 depth = 50
 mode = "build"
 figure_root = "./figures/"
@@ -39,6 +38,7 @@ class Tree:
     x_values, categories = extract_categories(dataset)
     self.labels = categories
 
+    #allow all nodes to access the maximum allowed depth
     global depth
     depth = max_depth
 
@@ -61,15 +61,21 @@ class Tree:
     self.head.clean()
 
   def evaluate(self, test_data):
-    '''Used for when test data is being given from an outside source'''
+    '''Used for when test a set of data as an array is being given from an outside source'''
     outlist = []
     for sample in test_data:
       outlist.append(self.head.evaluate(sample))
     #if mode == "debug": print(outlist)
     return outlist
       
+
   def evaluate_internal(self, mode=0):
-    '''does the same as above, but uses the test data that is generated in the constructor'''
+    '''
+    does the same as above, but uses the test data that is generated in the constructor
+    
+    mode = 0: return 1 or 0, 1 for successful guess and 0 for failed guess
+    mode = 1: return the guessed label
+    '''
     
     results = self.evaluate(self.test)
     out = []
@@ -86,12 +92,14 @@ class Tree:
     
     return out
 
-
+  # Returns all needed data elements for the constructor
   def confusion_constructor(self): return (np.unique(self.labels), np.array(self.test)[:,-1], self.evaluate_internal(mode=1))
 
+  # Name of Classifier
   def name(self): return self.tree_name
   
   def run_test(self):
+    '''Take all internal test values and propagate them through the tree. Print result (this has mostly debugging applications only)'''
     results = self.evaluate(self.test)
 
     sum = 0
@@ -117,27 +125,33 @@ class Tree:
     border_colour = "black"
     colour = "lightgray"
 
-    #finding how deep and how wide the tree is:
+    #finding how deep, and how wide the tree is to divide up the frame:
     left_counter = 0
     right_counter = 0
     max_tree_depth = 0
 
+    
     def find_max_depth(curr_node):
-      
+      ''' Find the maximum depth of the tree'''  
       if curr_node.room is not None:
         return curr_node.depth
       else:
+        #keep traversing tree until there is no deeper nodes
         L_depth = find_max_depth(curr_node.left)
         R_depth = find_max_depth(curr_node.right)
         
+        #return higher of two depths
         return L_depth if (L_depth > R_depth) else R_depth
 
     max_tree_depth = find_max_depth(self.head)
     
-    
+
+    ### Finding the width of the tree ###
+
+    #assign temporary variable to root of tree
     root = self.head
     while True:
-
+      # Keep going left until no other left nodes
       if root.left is not None:
         left_counter += 1
         root = root.left
@@ -146,6 +160,7 @@ class Tree:
 
     root = self.head
     while True:
+      # keep going right until no other right nodes
       if root.right is not None:
         right_counter += 1
         root = root.right
@@ -156,6 +171,7 @@ class Tree:
     max_tree_depth += 1
     if mode == "debug": print("Tree found with max depth {a}, spanning {b} left entries and {c} right entries".format(a=max_tree_depth, b=left_counter, c=right_counter))
 
+    #width of tree is how far left you can go and how far right you can go
     total_span = left_counter + right_counter
 
     horisontal_bins = total_span
@@ -171,10 +187,11 @@ class Tree:
       ax.set_xlim(0, w)
       ax.set_ylim(0, h)
 
+      #disable axes from frame
       ax.tick_params(bottom=False, top=False, left=False, right=False)
       ax.tick_params(labelbottom=False, labeltop=False, labelleft=False, labelright=False)
 
-
+      #Set colour and width of frame
       ax.spines["top"].set_color(border_colour)
       ax.spines["bottom"].set_color(border_colour)
       ax.spines["left"].set_color(border_colour)
@@ -187,27 +204,26 @@ class Tree:
       ax.set_facecolor(colour)
 
     #Tree Construction
-    if horisontal_bins > vertical_bins:
-      radii = w / horisontal_bins - 0.2
-    else:
-      radii = h / vertical_bins - 0.2
 
-    #for debugging
+    # set size of node (doesnt need to be too big because you can just click to view data)
     radii = 0.06
 
+    #The centre position of all nodes
     centres = []
     texts = {}
     arrows = {}
     
- 
-
+  
+    #redefine root of tree
     root = self.head
 
+    # if tree is very one-sided, shift the tree over to allow larger half to have more of the frame
     if left_counter == right_counter:
       midpoint = w/2
     else:
       midpoint = w * (  (left_counter) / (left_counter + right_counter)  )
     
+    # offset for letting top node (root) be cropped off
     height_index = 0
     top_offset = 0.1
 
@@ -253,16 +269,17 @@ class Tree:
 
 
 
-
+        #all arrow positions on the form arrows[start_node] [end_node_1, end_node_2 ... end_node_n], (always 2 nodes)
         arrows[dot_centre] = [L,R]
       
       
       return dot_centre
       
 
-    
+    #recursivley add all values to centre list for all of the 
     L = plotTree(root.left, 0.2, midpoint, height_index + 1)
     R = plotTree(root.right, midpoint, w - 0.2, height_index + 1)
+    #root node arrows
     arrows[root_centre] = [L,R]
 
     #draw all the nodes
@@ -288,7 +305,7 @@ class Tree:
                     )
         
     if(1):      
-      
+      '''All the On-Click effects, display label when clicking on a nodes'''
       def display_text(event):
         
         
@@ -316,7 +333,7 @@ class Tree:
       fig.canvas.mpl_connect("button_press_event", display_text)
     #Show all labels (only needed for report)
     if(0):      
-      
+      '''Report applications only, shows all labels, but makes a messy diagram (for demo just use click version)'''
 
             
       for (t_x, t_y), nodeText in texts.items():
@@ -326,9 +343,6 @@ class Tree:
         annotations.append(ab)
         plt.draw()
 
-
-
-    fig.savefig(figure_root + "current_tree.png", dpi=300)
     plt.show()
 
 class Node:
@@ -369,18 +383,25 @@ class Node:
     x_values, categories = extract_categories(dataset)
     [labels, counts] = np.unique(categories, return_counts=True)
     
+
+
     if(len(labels) == 1):
+      #if theres only 1 label, make a leaf nodes
       self.room = labels[0]
       self.left = None
       self.right = None
       return
+
+
     elif(TreeDepth == int(depth)):
-      majority = labels[np.argmax(counts)] # fails here
+      # if maximum depth, take majority and make that the room decision
+      majority = labels[np.argmax(counts)]
       self.room = majority
       self.left = None
       self.right = None
       return
     else:
+      #keep creating the tree
       self.room = None
       dataset_a, dataset_b, split, feature = find_split(dataset, split_resolution, split_threshold=0) #unused as tree is not being tuned
       self.left = Node(dataset_a, TreeDepth + 1, split_threshold=split_threshold)
@@ -394,6 +415,7 @@ class Node:
 
 
   def clean(self):
+    '''pseudo-pruning, removes all nodes that do not '''
     if(self.left.room is None):
       self.left.clean()
     if(self.right.room is None):
